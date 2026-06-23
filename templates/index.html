@@ -1,317 +1,398 @@
 {% extends "base.html" %}
-{% block title %}Replyze — Reply to every customer in seconds.{% endblock %}
+{% block title %}Replyze — Reply to every customer. Instantly.{% endblock %}
 
 {% block extra_styles %}
-    .hero {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 7rem 2rem 4rem;
-      text-align: center;
-    }
+  .hero { max-width: 1100px; margin: 0 auto; padding: 120px 2rem 80px; text-align: center; }
+  .badge { display: inline-block; background: rgba(78,204,163,.12); border: 1px solid rgba(78,204,163,.35); color: var(--ac); font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: 5px 14px; border-radius: 100px; margin-bottom: 1.75rem; }
+  .hero-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.8rem,6vw,5rem); font-weight: 700; line-height: 1.05; letter-spacing: -.03em; margin-bottom: 1.25rem; }
+  .hero-title span { color: var(--ac); }
+  .hero-sub { font-size: 1.05rem; color: var(--mt); line-height: 1.7; max-width: 500px; margin: 0 auto 2.5rem; }
+  .hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3.5rem; }
+  .demo-widget { background: var(--surf); border: 1px solid var(--bdr); border-radius: 16px; padding: 1.5rem; max-width: 700px; margin: 0 auto; text-align: left; }
+  .demo-bar { display: flex; gap: 6px; margin-bottom: 1.25rem; align-items: center; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .demo-url { flex: 1; background: var(--bg); border-radius: 5px; padding: 4px 10px; font-size: .7rem; color: var(--mt); margin-left: 8px; }
+  .demo-label { font-size: .68rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mt); margin-bottom: .6rem; display: flex; justify-content: space-between; align-items: center; }
+  .demo-next { background: none; border: none; color: var(--ac); cursor: pointer; font-size: .72rem; font-family: Inter; }
+  .demo-review { background: var(--bg); border: 1px solid var(--bdr); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; font-size: .875rem; color: var(--mt); line-height: 1.65; }
+  .stars { color: #f59e0b; margin-bottom: 4px; display: block; letter-spacing: 2px; }
+  .tone-row { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .tone-btn { background: transparent; border: 1px solid var(--bdr); color: var(--mt); border-radius: 100px; padding: 4px 12px; font-size: .75rem; cursor: pointer; transition: all .2s; font-family: Inter; }
+  .tone-btn.active { background: rgba(78,204,163,.15); border-color: var(--ac); color: var(--ac); }
+  .demo-reply { background: rgba(78,204,163,.08); border: 1px solid rgba(78,204,163,.3); border-radius: 8px; padding: 1rem; font-size: .875rem; color: var(--tx); line-height: 1.75; min-height: 60px; display: none; }
+  .demo-reply-label { font-size: .65rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ac); margin-bottom: 6px; }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: rgba(59,130,246,0.1);
-      border: 1px solid var(--accent-dim);
-      color: #93c5fd;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      padding: 0.35rem 0.9rem;
-      border-radius: 100px;
-      margin-bottom: 2rem;
-    }
+  .section { max-width: 1100px; margin: 0 auto; padding: 80px 2rem; }
+  .section-label { font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ac); margin-bottom: .6rem; text-align: center; }
+  .section-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.8rem,3.5vw,2.5rem); font-weight: 700; letter-spacing: -.02em; text-align: center; margin-bottom: 3rem; }
 
-    h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(2.2rem, 5.5vw, 3.75rem);
-      font-weight: 800;
-      line-height: 1.08;
-      letter-spacing: -0.03em;
-      margin-bottom: 1.25rem;
-    }
+  .stat-row { display: flex; gap: 1.5rem; }
+  .stat-card { flex: 1; background: var(--surf); border: 1px solid var(--bdr); border-radius: 12px; padding: 2rem; text-align: center; opacity: 0; transform: translateY(20px); transition: opacity .5s, transform .5s; }
+  .stat-card.visible { opacity: 1; transform: translateY(0); }
+  .stat-val { font-family: 'Space Grotesk', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--ac); margin-bottom: .3rem; }
+  .stat-sub { font-size: .875rem; color: var(--mt); }
 
-    h1 em { font-style: normal; color: var(--accent); }
+  .bento { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+  .bento-wide { grid-column: span 2; }
 
-    .sub {
-      font-size: 1.05rem;
-      color: var(--muted);
-      line-height: 1.7;
-      max-width: 500px;
-      margin: 0 auto 2.5rem;
-    }
+  .steps-row { display: flex; align-items: flex-start; }
+  .step { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; padding: 0 1rem; }
+  .step-num { width: 48px; height: 48px; border-radius: 50%; background: rgba(78,204,163,.15); border: 2px solid var(--ac); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 700; color: var(--ac); margin-bottom: 1rem; z-index: 1; }
+  .step-line { position: absolute; top: 24px; left: calc(50% + 28px); right: calc(-50% + 28px); height: 2px; background: rgba(78,204,163,.25); }
+  .step-title { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: .95rem; margin-bottom: .4rem; }
+  .step-desc { font-size: .82rem; color: var(--mt); line-height: 1.65; max-width: 200px; }
 
-    .hero-cta {
-      display: inline-block;
-      background: var(--accent);
-      color: #fff;
-      padding: 0.95rem 2.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: transform 0.15s, box-shadow 0.15s;
-      box-shadow: 0 0 36px var(--accent-glow);
-    }
+  .about-card { background: var(--surf); border: 1px solid var(--bdr); border-radius: 16px; padding: 2.5rem; display: flex; gap: 2rem; align-items: flex-start; }
+  .about-avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(78,204,163,.15); border: 2px solid var(--ac); display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--ac); flex-shrink: 0; }
+  .about-eyebrow { font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ac); margin-bottom: .5rem; }
+  .about-name { font-family: 'Space Grotesk', sans-serif; font-size: 1.35rem; font-weight: 700; margin-bottom: .75rem; }
+  .about-text { font-size: .875rem; color: var(--mt); line-height: 1.75; margin-bottom: 1.25rem; }
+  .pill-link { display: inline-flex; align-items: center; gap: 6px; background: rgba(78,204,163,.12); border: 1px solid rgba(78,204,163,.3); color: var(--ac); padding: 6px 14px; border-radius: 100px; font-size: .78rem; font-weight: 600; transition: background .2s; }
+  .pill-link:hover { background: rgba(78,204,163,.22); }
 
-    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 0 56px rgba(59,130,246,0.4); }
-    .hero-note { margin-top: 0.9rem; font-size: 0.78rem; color: var(--muted); }
+  .price-wrap { max-width: 460px; margin: 0 auto; text-align: center; }
+  .price-card { background: var(--bg); border: 1px solid rgba(78,204,163,.4); border-radius: 16px; padding: 2.5rem; box-shadow: 0 0 40px rgba(78,204,163,.1); }
+  .price-num { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; font-weight: 700; margin-bottom: .2rem; }
+  .price-per { color: var(--mt); font-size: .875rem; margin-bottom: 2rem; }
+  .price-list { list-style: none; text-align: left; margin-bottom: 2rem; }
+  .price-list li { display: flex; align-items: center; gap: 10px; padding: .5rem 0; font-size: .875rem; color: var(--mt); border-bottom: 1px solid var(--bdr); }
+  .price-list li:last-child { border-bottom: none; }
+  .price-list li span { color: var(--ac); font-weight: 700; flex-shrink: 0; }
+  .price-note { font-size: .75rem; color: var(--mt); margin-top: .75rem; }
 
-    .platforms {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-top: 3rem;
-    }
+  footer { border-top: 1px solid var(--bdr); padding: 2rem; margin-top: auto; }
+  .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .footer-copy { font-size: .75rem; color: var(--mt); }
+  .footer-copy a { color: var(--ac); }
 
-    .platform-pill {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 0.4rem 1rem;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
+  .alt-bg { background: var(--surf); border-top: 1px solid var(--bdr); border-bottom: 1px solid var(--bdr); }
 
-    .demo {
-      max-width: 860px;
-      margin: 4rem auto 5rem;
-      padding: 0 2rem;
-    }
-
-    .demo-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-    }
-
-    .demo-bar {
-      background: #090b12;
-      padding: 0.75rem 1rem;
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-r { background: #ff5f57; }
-    .dot-y { background: #febc2e; }
-    .dot-g { background: #28c840; }
-
-    .demo-body {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: start;
-    }
-
-    .demo-col { padding: 1.75rem; }
-    .demo-col:first-child { border-right: 1px solid var(--border); }
-
-    .demo-arrow { padding: 1.75rem 0.5rem; color: var(--accent); font-size: 1.5rem; align-self: center; }
-
-    .demo-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
-
-    .review-bubble {
-      background: #0a0c14;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem;
-      font-size: 0.82rem;
-      color: #94a3b8;
-      line-height: 1.65;
-    }
-
-    .stars { color: #f59e0b; margin-bottom: 0.5rem; font-size: 0.9rem; }
-
-    .reply-bubble {
-      background: rgba(59,130,246,0.07);
-      border: 1px solid var(--accent-dim);
-      border-radius: 10px;
-      padding: 1rem;
-      font-size: 0.82rem;
-      color: #bfdbfe;
-      line-height: 1.65;
-    }
-
-    .reply-tag {
-      font-size: 0.68rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.5rem;
-    }
-
-    .how { max-width: 820px; margin: 0 auto 6rem; padding: 0 2rem; }
-
-    .section-label {
-      text-align: center;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 3rem;
-    }
-
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-
-    .step {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.5rem;
-    }
-
-    .step-num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--accent-dim); margin-bottom: 0.75rem; }
-    .step h3 { font-size: 0.92rem; font-weight: 600; margin-bottom: 0.4rem; }
-    .step p { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
-
-    .pricing { max-width: 460px; margin: 0 auto 6rem; padding: 0 2rem; text-align: center; }
-    .pricing h2 { font-family: 'Syne', sans-serif; font-size: 1.75rem; font-weight: 800; margin-bottom: 2rem; }
-
-    .price-card {
-      background: var(--surface);
-      border: 1px solid var(--accent-dim);
-      border-radius: 14px;
-      padding: 2rem;
-      box-shadow: 0 0 50px rgba(59,130,246,0.08);
-    }
-
-    .price-tag { font-family: 'Syne', sans-serif; font-size: 3rem; font-weight: 800; }
-    .price-tag span { font-size: 1rem; font-weight: 500; color: var(--muted); }
-
-    .price-features { list-style: none; margin: 1.5rem 0; text-align: left; }
-    .price-features li { padding: 0.45rem 0; font-size: 0.875rem; color: var(--muted); display: flex; align-items: center; gap: 0.6rem; }
-    .price-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
-
-    .price-cta {
-      display: block;
-      background: var(--accent);
-      color: #fff;
-      padding: 0.85rem;
-      border-radius: 7px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: opacity 0.15s;
-    }
-
-    .price-cta:hover { opacity: 0.85; }
-
-    footer { border-top: 1px solid var(--border); padding: 1.5rem 2rem; text-align: center; font-size: 0.78rem; color: var(--muted); }
-
-    @media (max-width: 600px) {
-      .steps { grid-template-columns: 1fr; }
-      .demo-body { grid-template-columns: 1fr; }
-      .demo-col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
-      .demo-arrow { display: none; }
-    }
+  @media (max-width: 768px) {
+    .bento { grid-template-columns: 1fr !important; }
+    .bento-wide { grid-column: span 1 !important; }
+    .stat-row { flex-direction: column !important; }
+    .steps-row { flex-direction: column !important; align-items: center; gap: 2rem; }
+    .step-line { display: none; }
+    .about-card { flex-direction: column !important; }
+    .hero-ctas { flex-direction: column; align-items: center; }
+  }
 {% endblock %}
 
 {% block content %}
-  <section class="hero">
-    <div class="badge">⚡ AI-powered · Works in 5 seconds</div>
-    <h1>Reply to every customer.<br /><em>Instantly.</em></h1>
-    <p class="sub">Paste any review, WhatsApp message, or comment. Replyze writes a perfect, human-sounding reply in seconds.</p>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge fu1">⚡ AI-powered customer replies</div>
+
+  <h1 class="hero-title fu2">
+    Reply to every customer.<br/>
+    <span>Instantly.</span>
+  </h1>
+
+  <p class="hero-sub fu3">
+    Paste any review, WhatsApp message, or comment. Get a perfect, human-sounding reply in under 20 seconds.
+  </p>
+
+  <div class="hero-ctas fu4">
     {% if user %}
-      <a class="hero-cta" href="/app">Go to dashboard →</a>
+      <a href="/app" class="btn-primary" style="font-size:1rem;padding:.85rem 2.25rem;">Go to dashboard →</a>
     {% else %}
-      <a class="hero-cta" href="/signup">Generate 3 free replies →</a>
-      <p class="hero-note">No credit card needed.</p>
+      <a href="/signup" class="btn-primary" style="font-size:1rem;padding:.85rem 2.25rem;">Start free — no card needed</a>
+      <a href="#how" class="btn-secondary" style="font-size:1rem;padding:.85rem 2.25rem;">See how it works</a>
     {% endif %}
+  </div>
 
-    <div class="platforms">
-      <div class="platform-pill">⭐ Google Reviews</div>
-      <div class="platform-pill">💬 WhatsApp</div>
-      <div class="platform-pill">📸 Instagram</div>
-      <div class="platform-pill">👍 Facebook</div>
+  <!-- DEMO WIDGET -->
+  <div class="demo-widget fu4">
+    <div class="demo-bar">
+      <div class="dot" style="background:#ff5f57"></div>
+      <div class="dot" style="background:#febc2e"></div>
+      <div class="dot" style="background:#28c840"></div>
+      <div class="demo-url">replyze.onrender.com/app</div>
     </div>
-  </section>
 
-  <div class="demo">
-    <div class="demo-card">
-      <div class="demo-bar">
-        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+    <div class="demo-label">
+      <span>Customer review</span>
+      <button class="demo-next" id="next-review">try another →</button>
+    </div>
+
+    <div class="demo-review" id="demo-review-box">
+      <span class="stars" id="demo-stars">★★★☆☆</span>
+      <span id="demo-review-text">The food arrived cold and the staff was rude when I complained. Waited 45 minutes for a simple order. Very disappointed.</span>
+    </div>
+
+    <div class="tone-row">
+      <button class="tone-btn" onclick="setTone('Professional', this)">Professional</button>
+      <button class="tone-btn" onclick="setTone('Friendly', this)">Friendly</button>
+      <button class="tone-btn active" id="tone-apologetic" onclick="setTone('Apologetic', this)">Apologetic</button>
+    </div>
+
+    <button class="btn-primary" id="demo-btn" onclick="runDemo()" style="width:100%;padding:.8rem;margin-bottom:1rem;font-size:.9rem;">
+      ⚡ Generate reply
+    </button>
+
+    <div class="demo-reply" id="demo-reply">
+      <div class="demo-reply-label">Generated reply</div>
+      <span id="demo-typed"></span><span class="cursor" id="demo-cursor" style="color:var(--ac)">|</span>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    {% for _ in range(5) %}
+      <div class="platform-pill">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        <span>Google</span>
       </div>
-      <div class="demo-body">
-        <div class="demo-col">
-          <div class="demo-label">Customer review</div>
-          <div class="review-bubble">
-            <div class="stars">★★★☆☆</div>
-            Food was okay but service was really slow. Waited 40 minutes for our order. The pizza was good though. Might come back but hope the service improves.
-          </div>
-        </div>
-        <div class="demo-arrow">→</div>
-        <div class="demo-col">
-          <div class="demo-label">Replyze generates →</div>
-          <div class="reply-bubble">
-            <div class="reply-tag">Your reply · 5 seconds</div>
-            Thank you for visiting and for the honest feedback! We sincerely apologize for the long wait — that's not the experience we want for our guests. We're glad you enjoyed the pizza, and we hope to earn back a 5-star visit from you soon. Please ask for the manager on your next visit — we'd love to make it right.
-          </div>
+      <div class="platform-pill">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <span>WhatsApp</span>
+      </div>
+      <div class="platform-pill">
+        <svg width="18" height="18" viewBox="0 0 24 24"><defs><linearGradient id="ig{{ loop.index }}" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><path fill="url(#ig{{ loop.index }})" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        <span>Instagram</span>
+      </div>
+      <div class="platform-pill">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        <span>Facebook</span>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- STATS -->
+<section class="section" id="stats-section">
+  <div class="stat-row" id="stat-row">
+    <div class="stat-card" style="transition-delay:0s">
+      <div class="stat-val">Built by a student,</div>
+      <div class="stat-sub">for real businesses.</div>
+    </div>
+    <div class="stat-card" style="transition-delay:.15s">
+      <div class="stat-val">Your data is</div>
+      <div class="stat-sub">never stored. Ever.</div>
+    </div>
+    <div class="stat-card" style="transition-delay:.3s">
+      <div class="stat-val">No subscription</div>
+      <div class="stat-sub">needed to try.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="alt-bg" id="features">
+  <div class="section" style="padding-top:80px;padding-bottom:80px">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything you need to reply better</h2>
+
+    <div class="bento">
+      <div class="card bento-wide">
+        <div style="font-size:1.6rem;margin-bottom:.65rem">🧠</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Sentiment detection</div>
+        <div style="font-size:.82rem;color:var(--mt);line-height:1.65">Automatically detects positive, negative, or neutral tone and adjusts the reply style accordingly.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.6rem;margin-bottom:.65rem">⚡</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Under 20 seconds</div>
+        <div style="font-size:.82rem;color:var(--mt);line-height:1.65">From paste to copy faster than typing "Dear customer..."</div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.6rem;margin-bottom:.65rem">🎯</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Tone control</div>
+        <div style="font-size:.82rem;color:var(--mt);line-height:1.65">Professional, friendly, or apologetic — you pick the mood.</div>
+      </div>
+      <div class="card bento-wide">
+        <div style="font-size:1.6rem;margin-bottom:.65rem">🌍</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Any business type</div>
+        <div style="font-size:.82rem;color:var(--mt);line-height:1.65">Restaurant, salon, hotel, clinic, gym — works for any business that gets customer messages.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.6rem;margin-bottom:.65rem">🔒</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Zero data stored</div>
+        <div style="font-size:.82rem;color:var(--mt);line-height:1.65">Reviews and replies never logged, stored, or used for training.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.6rem;margin-bottom:.65rem">💰</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Enterprise AI, indie price</div>
+        <div style="font-size:.82rem;color:var(--mt);line-height:1.65">Powered by the same frontier AI used by the world's top companies.</div>
+      </div>
+    </div>
+
+    <!-- Platform card -->
+    <div class="card" style="margin-top:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.25rem">Works on every platform you use</div>
+        <div style="font-size:.82rem;color:var(--mt)">One tool for all your customer messages.</div>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <div class="platform-pill"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg><span>Google</span></div>
+        <div class="platform-pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp</span></div>
+        <div class="platform-pill"><svg width="18" height="18" viewBox="0 0 24 24"><defs><linearGradient id="igp" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><path fill="url(#igp)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg><span>Instagram</span></div>
+        <div class="platform-pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg><span>Facebook</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-label">How it works</div>
+  <h2 class="section-title">Three steps, under 20 seconds</h2>
+  <div class="steps-row" style="max-width:860px;margin:0 auto">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-line"></div>
+      <div class="step-title">Paste the message</div>
+      <div class="step-desc">Copy any review, WhatsApp message, or social comment and paste it in.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-line"></div>
+      <div class="step-title">Pick your tone</div>
+      <div class="step-desc">Choose professional, friendly, or apologetic — whatever the situation calls for.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Copy and send</div>
+      <div class="step-desc">One click to copy. Paste it wherever you need. Done in under 20 seconds.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="alt-bg" id="about">
+  <div class="section" style="max-width:860px;padding-top:80px;padding-bottom:80px">
+    <div class="about-card">
+      <div class="about-avatar">S</div>
+      <div style="flex:1">
+        <div class="about-eyebrow">About the builder</div>
+        <div class="about-name">Built by Samrat, age 14.</div>
+        <p class="about-text">I'm a 14-year-old developer who built Replyze because I saw local businesses spending hours replying to customer reviews manually. I wanted to build something real — not a school project, but an actual product that saves people time and money. This is it.</p>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <a href="https://x.com/samratbuilds" target="_blank" class="pill-link">𝕏 @samratbuilds</a>
+          <a href="https://github.com/titanium10" target="_blank" class="pill-link">GitHub · titanium10</a>
         </div>
       </div>
     </div>
   </div>
+</section>
 
-  <section class="how">
-    <div class="section-label">How it works</div>
-    <div class="steps">
-      <div class="step"><div class="step-num">01</div><h3>Create a free account</h3><p>Sign up with Google or email. No credit card needed to start.</p></div>
-      <div class="step"><div class="step-num">02</div><h3>Paste the message</h3><p>Review, WhatsApp message, Instagram comment — anything a customer sent.</p></div>
-      <div class="step"><div class="step-num">03</div><h3>Copy and send</h3><p>One click to copy. Paste wherever you need. Done in under 10 seconds.</p></div>
-    </div>
-  </section>
-
-  <section class="pricing">
-    <h2>One simple price</h2>
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-label">Pricing</div>
+  <h2 class="section-title">One simple price</h2>
+  <div class="price-wrap">
     <div class="price-card">
-      <div class="price-tag" id="price-tag">$19 <span>/ month</span></div>
-      <ul class="price-features">
-        <li>Unlimited replies — all platforms</li>
-        <li>Google, WhatsApp, Instagram, Facebook</li>
-        <li>3 tone options per reply</li>
-        <li>Custom business name in every reply</li>
-        <li>Cancel anytime</li>
+      <div class="price-num ppp-price">$19</div>
+      <div class="price-per">per month · cancel anytime</div>
+      <ul class="price-list">
+        <li><span>✓</span> Unlimited replies on all platforms</li>
+        <li><span>✓</span> Google, WhatsApp, Instagram, Facebook</li>
+        <li><span>✓</span> Tone control per reply</li>
+        <li><span>✓</span> Custom business name in every reply</li>
+        <li><span>✓</span> Zero data stored</li>
+        <li><span>✓</span> Cancel anytime</li>
       </ul>
-      <a class="price-cta" href="/signup">Start with 3 free replies →</a>
+      <a href="/signup" class="btn-primary" style="display:block;text-align:center;padding:.9rem;font-size:1rem;width:100%">Start with 3 free replies →</a>
+      <div class="price-note">No credit card needed to start.</div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <footer>Built by Samrat &nbsp;·&nbsp; Replyze © 2025</footer>
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div style="display:flex;align-items:center;gap:9px">
+      <svg width="22" height="22" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="var(--bg)" stroke="#4ecca3" stroke-width="1.5"/><text x="16" y="23" text-anchor="middle" font-family="Impact" font-size="22" fill="#4ecca3" transform="scale(1.18,1) translate(-2.5,0)">R</text><line x1="7" y1="25" x2="25" y2="25" stroke="#4ecca3" stroke-width="1.5"/></svg>
+      <span style="font-family:Impact,sans-serif;font-size:1rem;letter-spacing:2px;color:var(--tx)">REPLY<span style="color:var(--ac)">ZE</span></span>
+    </div>
+    <div class="footer-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how" class="nav-link">How it works</a>
+      <a href="#about" class="nav-link">About</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="mailto:samratdgod@gmail.com" class="nav-link">Contact</a>
+    </div>
+    <div class="footer-copy">Replyze © 2025 · Built by <a href="https://x.com/samratbuilds">Samrat</a></div>
+  </div>
+</footer>
+
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-  const pricing = {
-    IN: '₹299', KR: '₩9,900', GB: '£15', AU: 'A$28',
-    SG: 'S$25', PH: '₱299',  BR: 'R$49', DE: '€17',
-    FR: '€17',  CA: 'C$25',  JP: '¥2,200', NG: '₦4,999',
-    PK: '₨999', BD: '৳499',
-  };
+  // Demo data
+  const REVIEWS = [
+    { stars: 3, text: "The food arrived cold and the staff was rude when I complained. Waited 45 minutes for a simple order. Very disappointed." },
+    { stars: 2, text: "Checked in and my room wasn't cleaned. Front desk barely apologized. Won't be coming back." },
+    { stars: 1, text: "Ordered online but received the wrong items. Support took forever to respond and offered no refund." },
+  ];
+  const REPLIES = [
+    "Thank you for taking the time to share your feedback — we're truly sorry for this experience. Cold food and a long wait is never acceptable, and the way our staff handled your complaint fell far short of our standards. We'd love the chance to make this right. Please reach out to us directly so we can personally ensure your next visit exceeds your expectations.",
+    "We sincerely apologize for the state of your room upon check-in — that's not the standard we hold ourselves to, and your disappointment is completely understandable. We're addressing this with our housekeeping team immediately. We'd love to have you back and make it up to you — please contact us directly.",
+    "We're so sorry about the mix-up with your order and the delay in our response. That's not the experience we want for any customer. We'd like to issue a full refund and ensure your next order is on us. Please reach out and we'll resolve this right away.",
+  ];
 
-  async function setPrice() {
-    try {
-      const res = await fetch('https://ipapi.co/json/');
-      const data = await res.json();
-      const p = pricing[data.country_code];
-      if (p) document.getElementById('price-tag').innerHTML = `${p} <span>/ month</span>`;
-    } catch(e) {}
+  let reviewIdx = 0;
+  let typing = false;
+  let typingInterval = null;
+
+  function stars(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
+
+  document.getElementById('next-review').addEventListener('click', () => {
+    reviewIdx = (reviewIdx + 1) % REVIEWS.length;
+    document.getElementById('demo-stars').textContent = stars(REVIEWS[reviewIdx].stars);
+    document.getElementById('demo-review-text').textContent = REVIEWS[reviewIdx].text;
+    document.getElementById('demo-reply').style.display = 'none';
+    document.getElementById('demo-typed').textContent = '';
+    if (typingInterval) clearInterval(typingInterval);
+    typing = false;
+    document.getElementById('demo-btn').textContent = '⚡ Generate reply';
+    document.getElementById('demo-btn').disabled = false;
+  });
+
+  function setTone(tone, el) {
+    document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
   }
 
-  setPrice();
+  function runDemo() {
+    if (typing) return;
+    typing = true;
+    const btn = document.getElementById('demo-btn');
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+
+    const replyEl = document.getElementById('demo-reply');
+    const typedEl = document.getElementById('demo-typed');
+    replyEl.style.display = 'block';
+    typedEl.textContent = '';
+
+    const reply = REPLIES[reviewIdx];
+    let i = 0;
+    typingInterval = setInterval(() => {
+      typedEl.textContent = reply.slice(0, i + 1);
+      i++;
+      if (i >= reply.length) {
+        clearInterval(typingInterval);
+        typing = false;
+        btn.textContent = '⚡ Generate reply';
+        btn.disabled = false;
+        document.getElementById('demo-cursor').style.display = 'none';
+      }
+    }, 16);
+  }
+
+  // Stats scroll reveal
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        document.querySelectorAll('.stat-card').forEach(c => c.classList.add('visible'));
+      }
+    });
+  }, { threshold: 0.2 });
+  obs.observe(document.getElementById('stat-row'));
 </script>
 {% endblock %}

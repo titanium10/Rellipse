@@ -2,211 +2,51 @@
 {% block title %}Dashboard — Replyze{% endblock %}
 
 {% block extra_styles %}
-    main {
-      flex: 1;
-      max-width: 860px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
-
-    .page-title { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; }
-    .page-title span { color: var(--muted); font-weight: 400; font-family: 'Inter', sans-serif; font-size: 0.875rem; margin-left: 0.75rem; }
-
-    .uses-bar {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.85rem 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.85rem;
-    }
-
-    .uses-bar .label { color: var(--muted); }
-    .uses-bar .count { font-weight: 600; color: var(--text); }
-    .uses-bar .upgrade { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 0.8rem; }
-    .uses-bar .upgrade:hover { text-decoration: underline; }
-
-    .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-
-    .control-group label {
-      display: block;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.5rem;
-    }
-
-    select, input[type="text"] {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.875rem;
-      padding: 0.65rem 0.9rem;
-      outline: none;
-      transition: border-color 0.15s;
-      appearance: none;
-    }
-
-    select:focus, input[type="text"]:focus { border-color: var(--accent); }
-
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .panel-header {
-      padding: 0.85rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .panel-title { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-    .char-count { font-size: 0.72rem; color: var(--muted); }
-
-    textarea {
-      background: transparent;
-      border: none;
-      outline: none;
-      resize: none;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      line-height: 1.7;
-      padding: 1.25rem;
-      min-height: 160px;
-    }
-
-    textarea::placeholder { color: var(--muted); }
-
-    .action-row { display: flex; gap: 1rem; align-items: center; }
-
-    #reply-btn {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 0.85rem 2.25rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      transition: opacity 0.15s, transform 0.15s;
-      box-shadow: 0 0 24px rgba(59,130,246,0.25);
-    }
-
-    #reply-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
-    #reply-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-
-    #copy-btn {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 0.85rem 1.5rem;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      transition: border-color 0.15s;
-      display: none;
-    }
-
-    #copy-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-    .output-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-
-    .loading-bar {
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent), #93c5fd, var(--accent));
-      background-size: 200% 100%;
-      animation: shimmer 1.2s infinite;
-      display: none;
-    }
-
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-    .output-body { padding: 1.25rem; min-height: 140px; position: relative; }
-
-    .output-placeholder {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      color: var(--muted); gap: 0.4rem;
-      text-align: center; font-size: 0.85rem;
-    }
-
-    .output-placeholder .icon { font-size: 1.75rem; }
-    #output-text { font-size: 0.9rem; line-height: 1.75; white-space: pre-wrap; color: var(--text); display: none; }
-
-    /* Paywall modal */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-    }
-
-    .modal-overlay.show { opacity: 1; pointer-events: all; }
-
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--accent-dim);
-      border-radius: 14px;
-      padding: 2.5rem 2rem;
-      max-width: 400px; width: 90%;
-      text-align: center;
-      box-shadow: 0 0 60px rgba(59,130,246,0.15);
-    }
-
-    .modal h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.75rem; }
-    .modal p { color: var(--muted); font-size: 0.875rem; line-height: 1.6; margin-bottom: 1.75rem; }
-
-    .modal-cta {
-      display: block; background: var(--accent); color: #fff;
-      padding: 0.85rem; border-radius: 7px;
-      font-size: 0.95rem; font-weight: 600;
-      text-decoration: none; transition: opacity 0.15s; margin-bottom: 0.75rem;
-    }
-
-    .modal-cta:hover { opacity: 0.85; }
-    .modal-close { background: none; border: none; color: var(--muted); font-size: 0.8rem; cursor: pointer; font-family: 'Inter', sans-serif; }
-    .modal-close:hover { color: var(--text); }
-
-    @media (max-width: 600px) { .controls { grid-template-columns: 1fr; } }
+  main { flex: 1; max-width: 860px; width: 100%; margin: 0 auto; padding: 80px 2rem 2rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .page-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; }
+  .page-title span { color: var(--mt); font-weight: 400; font-family: 'Inter', sans-serif; font-size: .875rem; margin-left: .75rem; }
+  .uses-bar { background: var(--surf); border: 1px solid var(--bdr); border-radius: 10px; padding: .85rem 1.25rem; display: flex; align-items: center; justify-content: space-between; font-size: .85rem; }
+  .uses-bar .label { color: var(--mt); }
+  .uses-bar .upgrade { color: var(--ac); font-weight: 600; font-size: .8rem; }
+  .uses-bar .upgrade:hover { text-decoration: underline; }
+  .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  .control-group label { display: block; font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mt); margin-bottom: .5rem; }
+  select, input[type="text"] { width: 100%; background: var(--surf); border: 1px solid var(--bdr); border-radius: 7px; color: var(--tx); font-family: 'Inter', sans-serif; font-size: .875rem; padding: .65rem .9rem; outline: none; transition: border-color .15s; appearance: none; }
+  select:focus, input[type="text"]:focus { border-color: var(--ac); }
+  .panel { background: var(--surf); border: 1px solid var(--bdr); border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
+  .panel-header { padding: .85rem 1.25rem; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center; }
+  .panel-title { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mt); }
+  .char-count { font-size: .72rem; color: var(--mt); }
+  textarea { background: transparent; border: none; outline: none; resize: none; color: var(--tx); font-family: 'Inter', sans-serif; font-size: .9rem; line-height: 1.7; padding: 1.25rem; min-height: 160px; }
+  textarea::placeholder { color: var(--mt); }
+  .action-row { display: flex; gap: 1rem; align-items: center; }
+  #reply-btn { background: var(--ac); color: var(--ac-btn-tx); border: none; padding: .85rem 2.25rem; border-radius: 8px; font-size: .95rem; font-weight: 700; cursor: pointer; font-family: 'Space Grotesk', sans-serif; transition: opacity .15s, transform .15s; box-shadow: 0 0 24px rgba(78,204,163,.2); }
+  #reply-btn:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
+  #reply-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  #copy-btn, #regen-btn { background: transparent; color: var(--tx); border: 1px solid var(--bdr); padding: .85rem 1.5rem; border-radius: 8px; font-size: .875rem; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color .2s; display: none; }
+  #copy-btn:hover, #regen-btn:hover { border-color: var(--ac); color: var(--ac); }
+  .output-panel { background: var(--surf); border: 1px solid var(--bdr); border-radius: 10px; overflow: hidden; }
+  .output-body { padding: 1.25rem; min-height: 140px; position: relative; }
+  .output-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--mt); gap: .4rem; text-align: center; font-size: .85rem; }
+  .output-placeholder .icon { font-size: 1.75rem; }
+  #output-text { font-size: .9rem; line-height: 1.75; white-space: pre-wrap; color: var(--tx); display: none; }
+  @media (max-width: 600px) { .controls { grid-template-columns: 1fr; } .action-row { flex-wrap: wrap; } }
 {% endblock %}
 
 {% block content %}
 <main>
   <div class="page-title">
     Generate a reply
-    <span>Hello, {{ user.name or user.email.split('@')[0] }}</span>
+    <span>Welcome back, {{ user['name'] or user['email'].split('@')[0] }}</span>
   </div>
 
   <!-- Usage bar -->
   <div class="uses-bar">
-    <span class="label">Free replies used: <span class="count">{{ user.uses }} / 3</span></span>
-    {% if user.uses >= 3 %}
-      <a class="upgrade" href="https://buy.stripe.com/YOUR_STRIPE_LINK" target="_blank">Upgrade to unlimited →</a>
+    <span class="label">Free replies used: <strong>{{ user['uses'] }} / 3</strong></span>
+    {% if user['uses'] >= 3 %}
+      <a class="upgrade" href="https://buy.stripe.com/YOUR_STRIPE_LINK" target="_blank">Upgrade to unlimited — <span class="ppp-mo">$19/mo</span> →</a>
     {% else %}
-      <span style="font-size:0.8rem; color: var(--muted);">{{ 3 - user.uses }} remaining</span>
+      <span style="font-size:.8rem;color:var(--mt)">{{ 3 - user['uses'] }} free {{ 'reply' if (3 - user['uses']) == 1 else 'replies' }} remaining</span>
     {% endif %}
   </div>
 
@@ -231,11 +71,11 @@
     </div>
     <div class="control-group">
       <label>Business name (optional)</label>
-      <input type="text" id="business-name" placeholder="e.g. Sharma's Kitchen" />
+      <input type="text" id="business-name" placeholder="e.g. Mike's Coffee Shop"/>
     </div>
   </div>
 
-  <!-- Message input -->
+  <!-- Input -->
   <div class="panel">
     <div class="panel-header">
       <div class="panel-title">Customer message</div>
@@ -248,6 +88,7 @@
   <div class="action-row">
     <button id="reply-btn">⚡ Generate reply</button>
     <button id="copy-btn">Copy reply</button>
+    <button id="regen-btn">↺ Regenerate</button>
   </div>
 
   <!-- Output -->
@@ -255,6 +96,7 @@
     <div class="loading-bar" id="loading-bar"></div>
     <div class="panel-header">
       <div class="panel-title">Your reply</div>
+      <div id="char-output" style="font-size:.72rem;color:var(--mt)"></div>
     </div>
     <div class="output-body">
       <div class="output-placeholder" id="output-placeholder">
@@ -270,8 +112,8 @@
 <div class="modal-overlay" id="paywall">
   <div class="modal">
     <h2>3 free replies used ⚡</h2>
-    <p>Unlock unlimited replies for <strong id="paywall-price">$19/month</strong>. Cancel anytime.</p>
-    <a class="modal-cta" href="https://buy.stripe.com/YOUR_STRIPE_LINK" target="_blank">Unlock unlimited</a>
+    <p>Unlock unlimited replies across Google, WhatsApp, Instagram, and Facebook for <strong><span class="ppp-price">$19</span>/month</strong>. Cancel anytime.</p>
+    <a class="modal-cta" href="https://buy.stripe.com/YOUR_STRIPE_LINK" target="_blank">Unlock unlimited — <span class="ppp-mo">$19/mo</span></a>
     <button class="modal-close" id="close-paywall">I'll reply manually</button>
   </div>
 </div>
@@ -282,17 +124,18 @@
   const messageEl   = document.getElementById('message');
   const replyBtn    = document.getElementById('reply-btn');
   const copyBtn     = document.getElementById('copy-btn');
+  const regenBtn    = document.getElementById('regen-btn');
   const outputText  = document.getElementById('output-text');
   const placeholder = document.getElementById('output-placeholder');
   const loadingBar  = document.getElementById('loading-bar');
   const paywall     = document.getElementById('paywall');
-  const closePaywall = document.getElementById('close-paywall');
+  const charOutput  = document.getElementById('char-output');
 
   messageEl.addEventListener('input', () => {
     document.getElementById('msg-count').textContent = `${messageEl.value.length} / 2000`;
   });
 
-  replyBtn.addEventListener('click', async () => {
+  async function generate() {
     const message = messageEl.value.trim();
     if (!message) { showToast('Paste the customer message first.', 'error'); return; }
 
@@ -302,6 +145,8 @@
     placeholder.style.display = 'none';
     outputText.style.display = 'none';
     copyBtn.style.display = 'none';
+    regenBtn.style.display = 'none';
+    charOutput.textContent = '';
 
     try {
       const res = await fetch('/api/reply', {
@@ -323,14 +168,15 @@
       outputText.textContent = data.reply;
       outputText.style.display = 'block';
       copyBtn.style.display = 'inline-block';
+      regenBtn.style.display = 'inline-block';
+      charOutput.textContent = `${data.reply.length} chars`;
       showToast('Reply ready!', 'success');
 
-      // Update usage display without full reload
-      const usesEl = document.querySelector('.uses-bar .count');
+      // Update usage display
+      const usesEl = document.querySelector('.uses-bar strong');
       if (usesEl) {
-        const parts = usesEl.textContent.split(' / ');
-        const newCount = parseInt(parts[0]) + 1;
-        usesEl.textContent = `${newCount} / 3`;
+        const cur = parseInt(usesEl.textContent.split('/')[0].trim());
+        usesEl.textContent = `${cur + 1} / 3`;
       }
 
     } catch(err) {
@@ -341,7 +187,10 @@
       replyBtn.textContent = '⚡ Generate reply';
       loadingBar.style.display = 'none';
     }
-  });
+  }
+
+  replyBtn.addEventListener('click', generate);
+  regenBtn.addEventListener('click', generate);
 
   copyBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(outputText.textContent)
@@ -349,28 +198,7 @@
       .catch(() => showToast('Copy failed — select manually.', 'error'));
   });
 
-  closePaywall.addEventListener('click', () => paywall.classList.remove('show'));
-  paywall.addEventListener('click', (e) => { if (e.target === paywall) paywall.classList.remove('show'); });
-
-  // PPP pricing in paywall
-  const pricing = {
-    IN: '₹299', KR: '₩9,900', GB: '£15', AU: 'A$28',
-    SG: 'S$25', PH: '₱299', BR: 'R$49', DE: '€17',
-    FR: '€17', CA: 'C$25', JP: '¥2,200'
-  };
-
-  async function setPaywallPrice() {
-    try {
-      const res = await fetch('https://ipapi.co/json/');
-      const data = await res.json();
-      const p = pricing[data.country_code];
-      if (p) {
-        document.getElementById('paywall-price').textContent = p + '/month';
-        document.querySelector('.modal-cta').textContent = `Unlock unlimited — ${p}/mo`;
-      }
-    } catch(e) {}
-  }
-
-  setPaywallPrice();
+  document.getElementById('close-paywall').addEventListener('click', () => paywall.classList.remove('show'));
+  paywall.addEventListener('click', e => { if (e.target === paywall) paywall.classList.remove('show'); });
 </script>
 {% endblock %}
