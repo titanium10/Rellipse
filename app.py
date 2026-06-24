@@ -1,6 +1,7 @@
 import os
 import re
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from functools import wraps
 
@@ -28,15 +29,25 @@ google = oauth.register(
 )
 
 FREE_USES = 3
-DB_PATH = "replyze.db"
+# Absolute path so the DB is always next to app.py, regardless of CWD
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "replyze.db")
 
 
 # ── Database ──
 
+@contextmanager
 def get_db():
+    """Open a SQLite connection, commit on success, rollback + close on error."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 def init_db():
@@ -63,7 +74,6 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        db.commit()
 
 
 init_db()
@@ -84,7 +94,8 @@ def get_current_user():
     if "user_id" not in session:
         return None
     with get_db() as db:
-        return db.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+        row = db.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+        return dict(row) if row else None
 
 
 # ── PWA static routes ──
@@ -132,11 +143,11 @@ def signup():
 
         if not email or not password or not name:
             flash("All fields are required.", "error")
-            return render_template("signup.html")
+            return render_template("signup.html", user=None)
 
         if len(password) < 6:
             flash("Password must be at least 6 characters.", "error")
-            return render_template("signup.html")
+            return render_template("signup.html", user=None)
 
         try:
             with get_db() as db:
@@ -145,15 +156,14 @@ def signup():
                     (email, name, generate_password_hash(password))
                 )
                 user_id = cur.lastrowid
-                db.commit()
             session["user_id"] = user_id
             session.permanent = True
             return redirect(url_for("editor"))
         except sqlite3.IntegrityError:
             flash("An account with that email already exists.", "error")
-            return render_template("signup.html")
+            return render_template("signup.html", user=None)
 
-    return render_template("signup.html")
+    return render_template("signup.html", user=None)
 
 
 # ── Login ──
@@ -168,17 +178,18 @@ def login():
         password = request.form.get("password", "")
 
         with get_db() as db:
-            user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+            row = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+            user = dict(row) if row else None
 
         if not user or not user["password_hash"] or not check_password_hash(user["password_hash"], password):
             flash("Incorrect email or password.", "error")
-            return render_template("login.html")
+            return render_template("login.html", user=None)
 
         session["user_id"] = user["id"]
         session.permanent = True
         return redirect(url_for("editor"))
 
-    return render_template("login.html")
+    return render_template("login.html", user=None)
 
 
 # ── Google OAuth ──
@@ -198,19 +209,17 @@ def google_callback():
     google_id = user_info["sub"]
 
     with get_db() as db:
-        user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-        if user:
-            if not user["google_id"]:
-                db.execute("UPDATE users SET google_id = ? WHERE id = ?", (google_id, user["id"]))
-                db.commit()
-            user_id = user["id"]
+        row = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+        if row:
+            if not row["google_id"]:
+                db.execute("UPDATE users SET google_id = ? WHERE id = ?", (google_id, row["id"]))
+            user_id = row["id"]
         else:
             cur = db.execute(
                 "INSERT INTO users (email, name, google_id) VALUES (?, ?, ?)",
                 (email, name, google_id)
             )
             user_id = cur.lastrowid
-            db.commit()
 
     session["user_id"] = user_id
     session.permanent = True
@@ -248,6 +257,7 @@ def get_history():
             ORDER BY created_at DESC
             LIMIT 10
         """, (session["user_id"],)).fetchall()
+        rows = [dict(r) for r in rows]
 
     def fmt_date(s):
         if not s:
@@ -397,13 +407,13 @@ Reply:"""
                     LIMIT 10
                 )
             """, (user["id"], user["id"]))
-            db.commit()
 
         return jsonify({"reply": reply, "is_email": is_email_mode})
 
-    except anthropic.APIError as e:
+    except Exception as e:
         return jsonify({"error": f"AI error: {str(e)}"}), 500
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    port = int(os.environ.get("PORT", 5001))
+    app.run(debug=False, host="0.0.0.0", port=port)
