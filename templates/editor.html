@@ -1,46 +1,45 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — Replyze{% endblock %}
 
-{% block extra_styles %}
-  main { flex: 1; max-width: 860px; width: 100%; margin: 0 auto; padding: 80px 2rem 2rem; display: flex; flex-direction: column; gap: 1.25rem; }
-  .page-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; }
-  .page-title span { color: var(--mt); font-weight: 400; font-family: 'Inter', sans-serif; font-size: .875rem; margin-left: .75rem; }
-  .uses-bar { background: var(--surf); border: 1px solid var(--bdr); border-radius: 10px; padding: .85rem 1.25rem; display: flex; align-items: center; justify-content: space-between; font-size: .85rem; }
-  .uses-bar .label { color: var(--mt); }
-  .uses-bar .upgrade { color: var(--ac); font-weight: 600; font-size: .8rem; }
-  .uses-bar .upgrade:hover { text-decoration: underline; }
-  .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-  .control-group label { display: block; font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mt); margin-bottom: .5rem; }
-  select, input[type="text"] { width: 100%; background: var(--surf); border: 1px solid var(--bdr); border-radius: 7px; color: var(--tx); font-family: 'Inter', sans-serif; font-size: .875rem; padding: .65rem .9rem; outline: none; transition: border-color .15s; appearance: none; }
-  select:focus, input[type="text"]:focus { border-color: var(--ac); }
-  .panel { background: var(--surf); border: 1px solid var(--bdr); border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
-  .panel-header { padding: .85rem 1.25rem; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; align-items: center; }
-  .panel-title { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mt); }
-  .char-count { font-size: .72rem; color: var(--mt); }
-  textarea { background: transparent; border: none; outline: none; resize: none; color: var(--tx); font-family: 'Inter', sans-serif; font-size: .9rem; line-height: 1.7; padding: 1.25rem; min-height: 160px; }
-  textarea::placeholder { color: var(--mt); }
-  .action-row { display: flex; gap: 1rem; align-items: center; }
-  #reply-btn { background: var(--ac); color: var(--ac-btn-tx); border: none; padding: .85rem 2.25rem; border-radius: 8px; font-size: .95rem; font-weight: 700; cursor: pointer; font-family: 'Space Grotesk', sans-serif; transition: opacity .15s, transform .15s; box-shadow: 0 0 24px rgba(78,204,163,.2); }
-  #reply-btn:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
-  #reply-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
-  #copy-btn, #regen-btn { background: transparent; color: var(--tx); border: 1px solid var(--bdr); padding: .85rem 1.5rem; border-radius: 8px; font-size: .875rem; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color .2s; display: none; }
-  #copy-btn:hover, #regen-btn:hover { border-color: var(--ac); color: var(--ac); }
-  .output-panel { background: var(--surf); border: 1px solid var(--bdr); border-radius: 10px; overflow: hidden; }
-  .output-body { padding: 1.25rem; min-height: 140px; position: relative; }
-  .output-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--mt); gap: .4rem; text-align: center; font-size: .85rem; }
-  .output-placeholder .icon { font-size: 1.75rem; }
-  #output-text { font-size: .9rem; line-height: 1.75; white-space: pre-wrap; color: var(--tx); display: none; }
-  @media (max-width: 600px) { .controls { grid-template-columns: 1fr; } .action-row { flex-wrap: wrap; } }
-{% endblock %}
-
 {% block content %}
+<style>
+  main{flex:1;max-width:860px;width:100%;margin:0 auto;padding:80px 2rem 2rem;display:flex;flex-direction:column;gap:1.25rem}
+  .page-title{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700}
+  .page-title span{color:var(--mt);font-weight:400;font-family:'Inter',sans-serif;font-size:.875rem;margin-left:.75rem}
+  .uses-bar{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:.85rem 1.25rem;display:flex;align-items:center;justify-content:space-between;font-size:.85rem}
+  .uses-bar .label{color:var(--mt)}
+  .uses-bar .upgrade{color:var(--ac);font-weight:600;font-size:.8rem}
+  .uses-bar .upgrade:hover{text-decoration:underline}
+  .controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+  .control-group label{display:block;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:.5rem}
+  select,input[type="text"]{width:100%;background:var(--surf);border:1px solid var(--bdr);border-radius:7px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.875rem;padding:.65rem .9rem;outline:none;transition:border-color .15s;appearance:none}
+  select:focus,input[type="text"]:focus{border-color:var(--ac)}
+  .panel{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+  .panel-header{padding:.85rem 1.25rem;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center}
+  .panel-title{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt)}
+  .char-count{font-size:.72rem;color:var(--mt)}
+  textarea{background:transparent;border:none;outline:none;resize:none;color:var(--tx);font-family:'Inter',sans-serif;font-size:.9rem;line-height:1.7;padding:1.25rem;min-height:160px}
+  textarea::placeholder{color:var(--mt)}
+  .action-row{display:flex;gap:1rem;align-items:center}
+  #reply-btn{background:var(--ac);color:var(--ac-btn-tx);border:none;padding:.85rem 2.25rem;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:opacity .15s,transform .15s;box-shadow:0 0 24px rgba(78,204,163,.2)}
+  #reply-btn:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+  #reply-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  #copy-btn,#regen-btn{background:transparent;color:var(--tx);border:1px solid var(--bdr);padding:.85rem 1.5rem;border-radius:8px;font-size:.875rem;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:border-color .2s;display:none}
+  #copy-btn:hover,#regen-btn:hover{border-color:var(--ac);color:var(--ac)}
+  .output-panel{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;overflow:hidden}
+  .output-body{padding:1.25rem;min-height:140px;position:relative}
+  .output-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mt);gap:.4rem;text-align:center;font-size:.85rem}
+  .output-placeholder .icon{font-size:1.75rem}
+  #output-text{font-size:.9rem;line-height:1.75;white-space:pre-wrap;color:var(--tx);display:none}
+  @media(max-width:600px){.controls{grid-template-columns:1fr}.action-row{flex-wrap:wrap}}
+</style>
+
 <main>
   <div class="page-title">
     Generate a reply
     <span>Welcome back, {{ user['name'] or user['email'].split('@')[0] }}</span>
   </div>
 
-  <!-- Usage bar -->
   <div class="uses-bar">
     <span class="label">Free replies used: <strong>{{ user['uses'] }} / 3</strong></span>
     {% if user['uses'] >= 3 %}
@@ -50,7 +49,6 @@
     {% endif %}
   </div>
 
-  <!-- Controls -->
   <div class="controls">
     <div class="control-group">
       <label>Platform</label>
@@ -75,7 +73,6 @@
     </div>
   </div>
 
-  <!-- Input -->
   <div class="panel">
     <div class="panel-header">
       <div class="panel-title">Customer message</div>
@@ -84,14 +81,12 @@
     <textarea id="message" placeholder="Paste the review, WhatsApp message, or comment here…" maxlength="2000"></textarea>
   </div>
 
-  <!-- Actions -->
   <div class="action-row">
     <button id="reply-btn">⚡ Generate reply</button>
     <button id="copy-btn">Copy reply</button>
     <button id="regen-btn">↺ Regenerate</button>
   </div>
 
-  <!-- Output -->
   <div class="output-panel">
     <div class="loading-bar" id="loading-bar"></div>
     <div class="panel-header">
@@ -108,11 +103,10 @@
   </div>
 </main>
 
-<!-- Paywall Modal -->
 <div class="modal-overlay" id="paywall">
   <div class="modal">
     <h2>3 free replies used ⚡</h2>
-    <p>Unlock unlimited replies across Google, WhatsApp, Instagram, and Facebook for <strong><span class="ppp-price">$19</span>/month</strong>. Cancel anytime.</p>
+    <p>Unlock unlimited replies for <strong><span class="ppp-price">$19</span>/month</strong>. Cancel anytime.</p>
     <a class="modal-cta" href="https://buy.stripe.com/YOUR_STRIPE_LINK" target="_blank">Unlock unlimited — <span class="ppp-mo">$19/mo</span></a>
     <button class="modal-close" id="close-paywall">I'll reply manually</button>
   </div>
@@ -121,84 +115,50 @@
 
 {% block extra_scripts %}
 <script>
-  const messageEl   = document.getElementById('message');
-  const replyBtn    = document.getElementById('reply-btn');
-  const copyBtn     = document.getElementById('copy-btn');
-  const regenBtn    = document.getElementById('regen-btn');
-  const outputText  = document.getElementById('output-text');
-  const placeholder = document.getElementById('output-placeholder');
-  const loadingBar  = document.getElementById('loading-bar');
-  const paywall     = document.getElementById('paywall');
-  const charOutput  = document.getElementById('char-output');
+  const messageEl=document.getElementById('message');
+  const replyBtn=document.getElementById('reply-btn');
+  const copyBtn=document.getElementById('copy-btn');
+  const regenBtn=document.getElementById('regen-btn');
+  const outputText=document.getElementById('output-text');
+  const placeholder=document.getElementById('output-placeholder');
+  const loadingBar=document.getElementById('loading-bar');
+  const paywall=document.getElementById('paywall');
+  const charOutput=document.getElementById('char-output');
 
-  messageEl.addEventListener('input', () => {
-    document.getElementById('msg-count').textContent = `${messageEl.value.length} / 2000`;
+  messageEl.addEventListener('input',()=>{
+    document.getElementById('msg-count').textContent=`${messageEl.value.length} / 2000`;
   });
 
-  async function generate() {
-    const message = messageEl.value.trim();
-    if (!message) { showToast('Paste the customer message first.', 'error'); return; }
-
-    replyBtn.disabled = true;
-    replyBtn.textContent = 'Generating…';
-    loadingBar.style.display = 'block';
-    placeholder.style.display = 'none';
-    outputText.style.display = 'none';
-    copyBtn.style.display = 'none';
-    regenBtn.style.display = 'none';
-    charOutput.textContent = '';
-
-    try {
-      const res = await fetch('/api/reply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message,
-          platform: document.getElementById('platform').value,
-          tone: document.getElementById('tone').value,
-          business_name: document.getElementById('business-name').value.trim()
-        })
-      });
-
-      const data = await res.json();
-
-      if (res.status === 402) { paywall.classList.add('show'); placeholder.style.display = 'flex'; return; }
-      if (!res.ok || data.error) { showToast(data.error || 'Something went wrong.', 'error'); placeholder.style.display = 'flex'; return; }
-
-      outputText.textContent = data.reply;
-      outputText.style.display = 'block';
-      copyBtn.style.display = 'inline-block';
-      regenBtn.style.display = 'inline-block';
-      charOutput.textContent = `${data.reply.length} chars`;
-      showToast('Reply ready!', 'success');
-
-      // Update usage display
-      const usesEl = document.querySelector('.uses-bar strong');
-      if (usesEl) {
-        const cur = parseInt(usesEl.textContent.split('/')[0].trim());
-        usesEl.textContent = `${cur + 1} / 3`;
-      }
-
-    } catch(err) {
-      showToast('Network error. Try again.', 'error');
-      placeholder.style.display = 'flex';
-    } finally {
-      replyBtn.disabled = false;
-      replyBtn.textContent = '⚡ Generate reply';
-      loadingBar.style.display = 'none';
-    }
+  async function generate(){
+    const message=messageEl.value.trim();
+    if(!message){showToast('Paste the customer message first.','error');return;}
+    replyBtn.disabled=true;replyBtn.textContent='Generating…';
+    loadingBar.style.display='block';placeholder.style.display='none';
+    outputText.style.display='none';copyBtn.style.display='none';regenBtn.style.display='none';charOutput.textContent='';
+    try{
+      const res=await fetch('/api/reply',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message,platform:document.getElementById('platform').value,
+          tone:document.getElementById('tone').value,business_name:document.getElementById('business-name').value.trim()})});
+      const data=await res.json();
+      if(res.status===402){paywall.classList.add('show');placeholder.style.display='flex';return;}
+      if(!res.ok||data.error){showToast(data.error||'Something went wrong.','error');placeholder.style.display='flex';return;}
+      outputText.textContent=data.reply;outputText.style.display='block';
+      copyBtn.style.display='inline-block';regenBtn.style.display='inline-block';
+      charOutput.textContent=`${data.reply.length} chars`;showToast('Reply ready!','success');
+      const usesEl=document.querySelector('.uses-bar strong');
+      if(usesEl){const cur=parseInt(usesEl.textContent.split('/')[0].trim());usesEl.textContent=`${cur+1} / 3`;}
+    }catch(err){showToast('Network error. Try again.','error');placeholder.style.display='flex';}
+    finally{replyBtn.disabled=false;replyBtn.textContent='⚡ Generate reply';loadingBar.style.display='none';}
   }
 
-  replyBtn.addEventListener('click', generate);
-  regenBtn.addEventListener('click', generate);
-
-  copyBtn.addEventListener('click', () => {
+  replyBtn.addEventListener('click',generate);
+  regenBtn.addEventListener('click',generate);
+  copyBtn.addEventListener('click',()=>{
     navigator.clipboard.writeText(outputText.textContent)
-      .then(() => showToast('Copied!', 'success'))
-      .catch(() => showToast('Copy failed — select manually.', 'error'));
+      .then(()=>showToast('Copied!','success'))
+      .catch(()=>showToast('Copy failed — select manually.','error'));
   });
-
-  document.getElementById('close-paywall').addEventListener('click', () => paywall.classList.remove('show'));
-  paywall.addEventListener('click', e => { if (e.target === paywall) paywall.classList.remove('show'); });
+  document.getElementById('close-paywall').addEventListener('click',()=>paywall.classList.remove('show'));
+  paywall.addEventListener('click',e=>{if(e.target===paywall)paywall.classList.remove('show');});
 </script>
 {% endblock %}
