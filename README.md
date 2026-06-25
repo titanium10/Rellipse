@@ -1,6 +1,18 @@
-# Replyze
+<div align="center">
+  <img src="logo.svg" alt="Replyze" width="120" height="120" style="margin-bottom: 20px;">
+  
+  # Replyze
+  
+  **AI-powered reply generator for customer messages across all platforms**
+  
+  ![Status](https://img.shields.io/badge/status-live-brightgreen)
+  ![Python](https://img.shields.io/badge/python-3.9+-blue)
+  ![License](https://img.shields.io/badge/license-MIT-green)
+  
+  [Live Demo](https://replyze.onrender.com) • [GitHub](https://github.com/titanium10/replyze)
+</div>
 
-AI-powered reply generator for customer messages across all platforms.
+---
 
 ## Features
 - Paste a review/message → get an AI reply in seconds
