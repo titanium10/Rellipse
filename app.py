@@ -7,14 +7,14 @@ from functools import wraps
 
 from flask import (
     Flask, render_template, request, jsonify,
-    session, redirect, url_for, flash, make_response
+    session, redirect, url_for, flash, send_from_directory
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from authlib.integrations.flask_client import OAuth
 import anthropic
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
+app.secret_key = os.environ.get("SECRET_KEY", "replyze-secret-2025")
 app.permanent_session_lifetime = timedelta(days=30)
 
 client = anthropic.Anthropic()
@@ -29,7 +29,7 @@ google = oauth.register(
 )
 
 FREE_USES = 3
-# Absolute path so the DB is always next to app.py, regardless of CWD
+ADMIN_EMAILS = ["samratdgod@gmail.com"]
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "replyze.db")
 
 
@@ -37,7 +37,6 @@ DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "replyze.db")
 
 @contextmanager
 def get_db():
-    """Open a SQLite connection, commit on success, rollback + close on error."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
@@ -70,7 +69,7 @@ def init_db():
                 message TEXT,
                 reply TEXT,
                 platform TEXT DEFAULT 'google',
-                language TEXT DEFAULT 'english',
+                language TEXT DEFAULT 'English',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -98,16 +97,16 @@ def get_current_user():
         return dict(row) if row else None
 
 
-# ── PWA static routes ──
+# ── PWA routes ──
 
 @app.route("/manifest.json")
 def manifest():
-    return app.send_static_file("manifest.json")
+    return send_from_directory("static", "manifest.json")
 
 
 @app.route("/service-worker.js")
 def service_worker():
-    resp = make_response(app.send_static_file("service-worker.js"))
+    resp = send_from_directory("static", "service-worker.js")
     resp.headers["Content-Type"] = "application/javascript"
     resp.headers["Service-Worker-Allowed"] = "/"
     return resp
@@ -125,8 +124,7 @@ def index():
 @login_required
 def editor():
     user = get_current_user()
-    uses_left = max(0, FREE_USES - user["uses"])
-    return render_template("editor.html", user=user, uses_left=uses_left)
+    return render_template("editor.html", user=user)
 
 
 # ── Signup ──
@@ -181,7 +179,8 @@ def login():
             row = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
             user = dict(row) if row else None
 
-        if not user or not user["password_hash"] or not check_password_hash(user["password_hash"], password):
+        if not user or not user["password_hash"] or \
+           not check_password_hash(user["password_hash"], password):
             flash("Incorrect email or password.", "error")
             return render_template("login.html", user=None)
 
@@ -212,7 +211,8 @@ def google_callback():
         row = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
         if row:
             if not row["google_id"]:
-                db.execute("UPDATE users SET google_id = ? WHERE id = ?", (google_id, row["id"]))
+                db.execute("UPDATE users SET google_id = ? WHERE id = ?",
+                           (google_id, row["id"]))
             user_id = row["id"]
         else:
             cur = db.execute(
@@ -234,17 +234,7 @@ def logout():
     return redirect(url_for("index"))
 
 
-# ── API: uses left ──
-
-@app.route("/api/uses-left")
-@login_required
-def uses_left():
-    user = get_current_user()
-    left = max(0, FREE_USES - user["uses"])
-    return jsonify({"uses_left": left, "free_total": FREE_USES})
-
-
-# ── API: reply history ──
+# ── API: history ──
 
 @app.route("/api/history")
 @login_required
@@ -252,54 +242,41 @@ def get_history():
     with get_db() as db:
         rows = db.execute("""
             SELECT id, message, reply, platform, language, created_at
-            FROM reply_history
-            WHERE user_id = ?
-            ORDER BY created_at DESC
-            LIMIT 10
+            FROM reply_history WHERE user_id = ?
+            ORDER BY created_at DESC LIMIT 10
         """, (session["user_id"],)).fetchall()
         rows = [dict(r) for r in rows]
 
-    def fmt_date(s):
-        if not s:
-            return ""
+    def fmt(s):
         try:
             dt = datetime.strptime(s[:19], "%Y-%m-%d %H:%M:%S")
             return dt.strftime("%b %d, %I:%M %p")
         except Exception:
-            return s
+            return s or ""
 
-    history = [
-        {
-            "id":              r["id"],
-            "message_preview": (r["message"] or "")[:70],
-            "reply_preview":   (r["reply"] or "")[:70],
-            "full_reply":      r["reply"] or "",
-            "platform":        r["platform"] or "google",
-            "language":        r["language"] or "english",
-            "created_at":      fmt_date(r["created_at"]),
-        }
-        for r in rows
-    ]
-    return jsonify({"history": history})
+    return jsonify({"history": [{
+        "id":              r["id"],
+        "message_preview": (r["message"] or "")[:80],
+        "full_reply":      r["reply"] or "",
+        "platform":        r["platform"] or "google",
+        "language":        r["language"] or "English",
+        "created_at":      fmt(r["created_at"]),
+    } for r in rows]})
 
 
 # ── Helpers ──
 
 def detect_email(text):
-    """True if the pasted text looks like an email (contains common email headers)."""
-    return bool(re.search(r'(?i)^(from|to|subject|date|cc|bcc)\s*:', text, re.MULTILINE))
+    return bool(re.search(
+        r'(?i)^(from|to|subject|date|cc|bcc)\s*:', text, re.MULTILINE
+    ))
 
 
-def tone_description(value):
-    """Convert 0-100 slider value to a tone instruction for the prompt."""
-    if value <= 20:
-        return "extremely formal and corporate, using proper business language and titles"
-    if value <= 40:
-        return "professional and polished, maintaining business decorum"
-    if value <= 60:
-        return "balanced and natural, neither too formal nor too casual"
-    if value <= 80:
-        return "warm and friendly, conversational but respectful"
+def tone_label(v):
+    if v <= 20:  return "extremely formal and corporate"
+    if v <= 40:  return "professional and polished"
+    if v <= 60:  return "balanced and natural"
+    if v <= 80:  return "warm and friendly"
     return "casual and relaxed, like texting a friend"
 
 
@@ -309,75 +286,66 @@ def tone_description(value):
 @login_required
 def generate_reply():
     user = get_current_user()
+    is_admin = user["email"] in ADMIN_EMAILS
 
-    if user["uses"] >= FREE_USES:
-        return jsonify({
-            "error": "free_limit_reached",
-            "message": f"You've used your {FREE_USES} free replies. Unlock unlimited for $19/month."
-        }), 402
+    if not is_admin and user["uses"] >= FREE_USES:
+        return jsonify({"error": "free_limit_reached"}), 402
 
     data          = request.get_json()
-    message       = data.get("message", "").strip()
-    platform      = data.get("platform", "google").strip()
-    language      = data.get("language", "english").strip()
-    context       = data.get("context", "").strip()
-    tone_value    = int(data.get("tone_value", 50))
-    length        = data.get("length", "medium").strip()
-    business_name = data.get("business_name", "").strip()
+    message       = (data.get("message") or "").strip()
+    platform      = (data.get("platform") or "google").strip()
+    language      = (data.get("language") or "English").strip()
+    context       = (data.get("context") or "").strip()
+    tone_value    = int(data.get("tone_value") or 50)
+    length        = (data.get("length") or "medium").strip()
+    business_name = (data.get("business_name") or "").strip()
 
     if not message:
         return jsonify({"error": "Paste the customer message first."}), 400
     if len(message) > 2000:
-        return jsonify({"error": "Message too long. Keep it under 2000 characters."}), 400
+        return jsonify({"error": "Message too long (max 2000 chars)."}), 400
 
-    is_email_mode = detect_email(message) or platform == "email"
+    is_email = detect_email(message) or platform == "email"
 
     platform_ctx = {
-        "google":    "This is a Google Maps review. The reply will be public.",
-        "whatsapp":  "This is a WhatsApp message from a customer. Keep it conversational.",
-        "instagram": "This is an Instagram comment. Keep it short and warm.",
-        "facebook":  "This is a Facebook comment or message. Professional but friendly.",
-        "twitter":   "This is a Twitter/X mention or DM. Keep it concise, under 280 characters.",
-        "email":     "This is a customer email. Format as a professional email reply.",
+        "google":    "This is a Google Maps review. Reply will be public.",
+        "whatsapp":  "This is a WhatsApp message. Keep it conversational.",
+        "instagram": "This is an Instagram comment. Short and warm.",
+        "facebook":  "This is a Facebook comment. Professional but friendly.",
+        "twitter":   "This is a Twitter/X mention. Concise, under 280 characters.",
+        "email":     "This is a customer email. Format as professional email reply.",
     }.get(platform, "This is a customer message.")
 
     length_map = {
         "short":  ("under 60 words",   150),
-        "medium": ("60 to 150 words",  350),
-        "long":   ("150 to 300 words", 600),
+        "medium": ("60 to 150 words",  400),
+        "long":   ("150 to 300 words", 650),
     }
-    length_instruction, max_tokens = length_map.get(length, length_map["medium"])
+    length_instr, max_tokens = length_map.get(length, length_map["medium"])
 
-    business_line = (
-        f"The business name is '{business_name}'." if business_name
-        else "Do not mention a specific business name."
-    )
-    context_line = f"Extra context: {context}" if context else ""
-    lang_line    = f"Write the reply in {language.capitalize()}." if language != "english" else "Write in English."
-    email_line   = (
-        "Format your reply with 'Subject: [relevant subject line]' on line 1, blank line, then body."
-        if is_email_mode else ""
-    )
+    biz_line  = f"Business name: '{business_name}'." if business_name else "Do not mention a business name."
+    ctx_line  = f"Extra context: {context}" if context else ""
+    lang_line = f"Write the reply in {language}." if language.lower() != "english" else ""
+    email_fmt = "Format: 'Subject: [line]' on line 1, blank line, then body." if is_email else ""
 
-    prompt = f"""You are an expert customer communication specialist for small businesses.
+    prompt = f"""You are an expert customer communication specialist.
 
-Write a perfect reply to the following customer message.
-
-Context:
-- {platform_ctx}
-- Tone: {tone_description(tone_value)}
-- Length: {length_instruction}
-- {business_line}
-- {lang_line}
-{context_line}
-{email_line}
+Write a perfect reply to the customer message below.
 
 Rules:
+- Platform: {platform_ctx}
+- Tone: {tone_label(tone_value)}
+- Length: {length_instr}
+- {biz_line}
 - Sound human, not like a template
-- Positive review: thank them specifically
-- Negative review: acknowledge, apologise, offer to resolve
-- Question: answer helpfully
-- Output ONLY the reply text
+- Positive review → thank them specifically
+- Negative review → acknowledge, apologise, offer resolution
+- Question → answer helpfully and clearly
+{lang_line}
+{ctx_line}
+{email_fmt}
+
+Output ONLY the reply text, nothing else.
 
 Customer message:
 {message}
@@ -385,30 +353,28 @@ Customer message:
 Reply:"""
 
     try:
-        response = client.messages.create(
+        resp  = client.messages.create(
             model="claude-haiku-4-5",
             max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}]
         )
-        reply = response.content[0].text.strip()
+        reply = resp.content[0].text.strip()
 
         with get_db() as db:
-            db.execute("UPDATE users SET uses = uses + 1 WHERE id = ?", (user["id"],))
+            if not is_admin:
+                db.execute("UPDATE users SET uses = uses + 1 WHERE id = ?", (user["id"],))
             db.execute("""
                 INSERT INTO reply_history (user_id, message, reply, platform, language)
                 VALUES (?, ?, ?, ?, ?)
             """, (user["id"], message[:500], reply, platform, language))
             db.execute("""
-                DELETE FROM reply_history
-                WHERE user_id = ? AND id NOT IN (
-                    SELECT id FROM reply_history
-                    WHERE user_id = ?
-                    ORDER BY created_at DESC
-                    LIMIT 10
+                DELETE FROM reply_history WHERE user_id = ? AND id NOT IN (
+                    SELECT id FROM reply_history WHERE user_id = ?
+                    ORDER BY created_at DESC LIMIT 10
                 )
             """, (user["id"], user["id"]))
 
-        return jsonify({"reply": reply, "is_email": is_email_mode})
+        return jsonify({"reply": reply, "is_email": is_email})
 
     except Exception as e:
         return jsonify({"error": f"AI error: {str(e)}"}), 500
