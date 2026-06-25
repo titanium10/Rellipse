@@ -145,10 +145,10 @@
       t.textContent=msg;t.className=`toast ${type} show`;
       clearTimeout(_tt);_tt=setTimeout(()=>{t.className='toast'},3500);
     }
-    const PPP={IN:'₹299',KR:'₩9,900',GB:'£15',AU:'A$28',SG:'S$25',PH:'₱299',BR:'R$49',DE:'€17',FR:'€17',CA:'C$25',JP:'¥2,200',NG:'₦4,999'};
+    const PPP={IN:'₹299',KR:'₩9,900',GB:'£15',AU:'A$28',SG:'S$25',PH:'₱299',BR:'R$49',DE:'€17',FR:'€17',CA:'C$25',JP:'¥2,200',NG:'₦4,999',US:'$19'};
     async function setPPP(){
-      try{const r=await fetch('https://ipapi.co/json/');const d=await r.json();const p=PPP[d.country_code];
-      if(p){document.querySelectorAll('.ppp-price').forEach(el=>el.textContent=p);document.querySelectorAll('.ppp-mo').forEach(el=>el.textContent=p+'/mo');}}catch(e){}
+      try{const r=await fetch('https://ipapi.co/json/');const d=await r.json();console.log('Country:',d.country_code);const p=PPP[d.country_code];
+      if(p){console.log('Price:',p);document.querySelectorAll('.ppp-price').forEach(el=>el.textContent=p);document.querySelectorAll('.ppp-mo').forEach(el=>el.textContent=p+'/mo');}else{console.log('No price for',d.country_code);}}catch(e){console.error('PPP error:',e)}
     }
     setPPP();
   </script>
