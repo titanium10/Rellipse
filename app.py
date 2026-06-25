@@ -328,26 +328,30 @@ def generate_reply():
     lang_line = f"Write the reply in {language}." if language.lower() != "english" else ""
     email_fmt = "Format: 'Subject: [line]' on line 1, blank line, then body." if is_email else ""
 
-    prompt = f"""You are an expert customer communication specialist.
+    prompt = f"""You are {business_name or 'responding'} to this message.
 
-Write a perfect reply to the customer message below.
+Write a reply that sounds natural and genuine, like how you would actually respond. Not a template—just real and direct.
 
-Rules:
+Guidelines:
 - Platform: {platform_ctx}
 - Tone: {tone_label(tone_value)}
 - Length: {length_instr}
-- {biz_line}
-- Sound human, not like a template
-- Positive review → thank them specifically
-- Negative review → acknowledge, apologise, offer resolution
-- Question → answer helpfully and clearly
 {lang_line}
 {ctx_line}
 {email_fmt}
 
-Output ONLY the reply text, nothing else.
+Rules:
+- Sound like a real person or organization, not a bot
+- Be direct and honest
+- Match the vibe of the message
+- If positive → show genuine gratitude
+- If negative → acknowledge, take responsibility, offer to fix it
+- If a question → answer clearly
+- Keep personality intact—no templates
 
-Customer message:
+Output ONLY the reply text.
+
+Message:
 {message}
 
 Reply:"""
