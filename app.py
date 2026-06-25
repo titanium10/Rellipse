@@ -380,6 +380,23 @@ Reply:"""
         return jsonify({"error": f"AI error: {str(e)}"}), 500
 
 
+@app.route("/api/pricing")
+def get_pricing():
+    """Return pricing based on user's country."""
+    country = request.headers.get('CF-IPCountry') or request.headers.get('X-Forwarded-Country') or 'US'
+    
+    prices = {
+        'IN': '₹299', 'KR': '₩9,900', 'GB': '£15', 'AU': 'A$28', 'SG': 'S$25',
+        'PH': '₱299', 'BR': 'R$49', 'DE': '€17', 'FR': '€17', 'CA': 'C$25',
+        'JP': '¥2,200', 'NG': '₦4,999', 'US': '$19', 'NZ': 'NZ$26', 'ZA': 'R$320',
+        'MX': 'MXN$380', 'AE': 'د.إ90', 'SE': 'kr190', 'CH': 'CHF21', 'NL': '€17',
+        'BE': '€17', 'AT': '€17', 'IT': '€17', 'ES': '€17', 'PL': 'zł79', 'CZ': 'Kč480',
+    }
+    
+    price = prices.get(country, '$19')
+    return jsonify({'price': price, 'country': country})
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(debug=False, host="0.0.0.0", port=port)
