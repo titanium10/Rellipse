@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#4ecca3"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <title>{% block title %}Rellipse — AI replies for every customer{% endblock %}</title>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230d1117' stroke='%234ecca3' stroke-width='1.5'/><text x='16' y='23' text-anchor='middle' font-family='Impact' font-size='22' fill='%234ecca3' transform='scale(1.18,1) translate(-2.5,0)'>R</text><line x1='7' y1='25' x2='25' y2='25' stroke='%234ecca3' stroke-width='1.5'/></svg>"/>
+  <style>
+    :root{--bg:#0d1117;--surf:#161b22;--bdr:#21262d;--tx:#e6edf3;--mt:#7d8590;--ac:#4ecca3;--ac-btn-tx:#0d1117}
+    [data-theme="light"]{--bg:#f4f6f3;--surf:#ffffff;--bdr:#dde8db;--tx:#1a1a2e;--mt:#6b7280;--ac:#1a9e78;--ac-btn-tx:#ffffff}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column;transition:background .3s,color .3s;overflow-x:hidden}
+    a{text-decoration:none}
+    ::selection{background:#4ecca340}
+
+    /* ── Background canvas ── */
+    #bg-canvas{position:fixed;inset:0;z-index:-2;pointer-events:none}
+
+    /* ── Liquid glass orbs ── */
+    .orb{position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(60px)}
+    .orb-1{width:600px;height:600px;background:radial-gradient(circle,rgba(78,204,163,.35) 0%,rgba(78,204,163,.1) 40%,transparent 70%);top:-150px;right:-100px;animation:orbDrift1 22s ease-in-out infinite}
+    .orb-2{width:500px;height:500px;background:radial-gradient(circle,rgba(99,102,241,.2) 0%,rgba(99,102,241,.05) 40%,transparent 70%);bottom:-120px;left:-80px;animation:orbDrift2 28s ease-in-out infinite}
+    .orb-3{width:350px;height:350px;background:radial-gradient(circle,rgba(78,204,163,.15) 0%,transparent 70%);top:40%;left:30%;animation:orbDrift3 18s ease-in-out infinite}
+    @keyframes orbDrift1{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(-40px,60px) scale(1.08)}50%{transform:translate(-20px,30px) scale(.96)}75%{transform:translate(30px,-40px) scale(1.04)}}
+    @keyframes orbDrift2{0%,100%{transform:translate(0,0)}33%{transform:translate(50px,-60px) scale(1.1)}66%{transform:translate(-30px,40px) scale(.92)}}
+    @keyframes orbDrift3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-55%,-45%) scale(1.15)}}
+    [data-theme="light"] .orb-1{background:radial-gradient(circle,rgba(26,158,120,.18) 0%,transparent 70%)}
+    [data-theme="light"] .orb-2{background:radial-gradient(circle,rgba(99,102,241,.1) 0%,transparent 70%)}
+    [data-theme="light"] .orb-3{background:radial-gradient(circle,rgba(26,158,120,.08) 0%,transparent 70%)}
+
+    /* ── Centered Nav ── */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:200;height:64px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 2rem;transition:all .3s}
+    .nav.scrolled{background:rgba(13,17,23,.75);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid rgba(255,255,255,.06);box-shadow:0 1px 0 rgba(78,204,163,.08)}
+    [data-theme="light"] .nav.scrolled{background:rgba(244,246,243,.8)}
+    .nav-logo{display:flex;align-items:center;gap:9px;justify-self:start}
+    .nav-logo-text{font-family:Impact,sans-serif;font-size:1.1rem;color:var(--tx);letter-spacing:2px}
+    .nav-logo-text span{color:var(--ac)}
+    .nav-links{display:flex;gap:2rem;align-items:center;justify-self:center}
+    .nav-link{font-size:.875rem;color:var(--mt);transition:color .2s}
+    .nav-link:hover{color:var(--ac)}
+    .nav-right{display:flex;align-items:center;gap:12px;justify-self:end}
+    .toggle{width:44px;height:24px;background:var(--ac);border-radius:100px;cursor:pointer;position:relative;border:none;transition:background .3s;flex-shrink:0}
+    .toggle-thumb{width:18px;height:18px;background:var(--bg);border-radius:50%;position:absolute;top:3px;left:23px;transition:left .3s}
+    [data-theme="light"] .toggle{background:var(--bdr)}
+    [data-theme="light"] .toggle-thumb{left:3px;background:#fff}
+    .btn-primary{background:var(--ac);color:var(--ac-btn-tx);border:none;padding:.7rem 1.6rem;border-radius:7px;font-size:.875rem;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .2s;font-family:'Space Grotesk',sans-serif;display:inline-block}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(78,204,163,.5)}
+    .btn-secondary{background:transparent;color:var(--tx);border:1px solid var(--bdr);padding:.7rem 1.6rem;border-radius:7px;font-size:.875rem;font-weight:600;cursor:pointer;transition:border-color .2s,color .2s;font-family:'Space Grotesk',sans-serif;display:inline-block}
+    .btn-secondary:hover{border-color:var(--ac);color:var(--ac)}
+    .hamburger{background:none;border:none;color:var(--tx);cursor:pointer;font-size:1.4rem;display:none}
+    .mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(13,17,23,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);padding:1.5rem;flex-direction:column;gap:1rem;z-index:199}
+    .mobile-menu.open{display:flex}
+
+    /* ── Glass panels ── */
+    .glass{background:rgba(22,27,34,.45);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid rgba(255,255,255,.07);box-shadow:0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06),inset 0 -1px 0 rgba(0,0,0,.2)}
+    [data-theme="light"] .glass{background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.8);box-shadow:0 8px 32px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.9)}
+    .glass-card{background:rgba(22,27,34,.5);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(78,204,163,.08);box-shadow:0 4px 24px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.04);border-radius:14px;transition:border-color .3s,box-shadow .3s,transform .3s}
+    .glass-card:hover{border-color:rgba(78,204,163,.25);box-shadow:0 12px 48px rgba(0,0,0,.4),0 0 24px rgba(78,204,163,.1),inset 0 1px 0 rgba(78,204,163,.08);transform:translateY(-4px)}
+    [data-theme="light"] .glass-card{background:rgba(255,255,255,.65);border-color:rgba(26,158,120,.1)}
+    [data-theme="light"] .glass-card:hover{border-color:rgba(26,158,120,.3)}
+
+    /* ── Misc ── */
+    .card{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;padding:1.5rem;transition:transform .25s,border-color .25s,box-shadow .25s}
+    .card:hover{transform:translateY(-3px);border-color:rgba(78,204,163,.35);box-shadow:0 8px 32px rgba(78,204,163,.1)}
+    .platform-pill{display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--bdr);border-radius:100px;padding:6px 16px;font-size:.8rem;color:var(--mt);transition:border-color .2s,color .2s;white-space:nowrap}
+    .platform-pill:hover{border-color:var(--ac);color:var(--tx)}
+    .flash{padding:.75rem 1rem;border-radius:7px;font-size:.85rem;margin-bottom:1.25rem}
+    .flash.error{background:rgba(239,68,68,.1);border:1px solid #ef4444;color:#ef4444}
+    .flash.success{background:rgba(78,204,163,.1);border:1px solid var(--ac);color:var(--ac)}
+    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:.85rem 1.5rem;font-size:.875rem;transition:transform .3s ease;z-index:300;max-width:380px;text-align:center}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast.error{border-color:#ef4444;color:#ef4444}
+    .toast.success{border-color:var(--ac);color:var(--ac)}
+    .auth-page{flex:1;display:flex;align-items:center;justify-content:center;padding:5rem 2rem 2rem}
+    .auth-card{background:var(--surf);border:1px solid var(--bdr);border-radius:14px;padding:2.5rem 2rem;width:100%;max-width:400px}
+    .auth-card h1{font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;margin-bottom:.4rem}
+    .auth-card .subtitle{color:var(--mt);font-size:.875rem;margin-bottom:2rem}
+    .google-btn{display:flex;align-items:center;justify-content:center;gap:.65rem;width:100%;background:#fff;color:#1a1a1a;border:none;border-radius:8px;padding:.75rem;font-size:.9rem;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity .15s;margin-bottom:1.25rem}
+    .google-btn:hover{opacity:.9}
+    .divider{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr)}
+    .divider span{font-size:.75rem;color:var(--mt);white-space:nowrap}
+    .form-group{margin-bottom:1rem}
+    .form-group label{display:block;font-size:.78rem;font-weight:600;color:var(--mt);margin-bottom:.4rem;letter-spacing:.04em}
+    .form-group input{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:7px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.9rem;padding:.7rem .9rem;outline:none;transition:border-color .15s,box-shadow .15s}
+    .form-group input:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(78,204,163,.1)}
+    .submit-btn{display:block;width:100%;background:var(--ac);color:var(--ac-btn-tx);border:none;border-radius:8px;padding:.8rem;font-size:.95rem;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:opacity .15s;margin-top:1.25rem}
+    .submit-btn:hover{opacity:.88}
+    .auth-switch{text-align:center;margin-top:1.5rem;font-size:.82rem;color:var(--mt)}
+    .auth-switch a{color:var(--ac)}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:300;opacity:0;pointer-events:none;transition:opacity .2s}
+    .modal-overlay.show{opacity:1;pointer-events:all}
+    .modal{background:var(--surf);border:1px solid var(--ac);border-radius:14px;padding:2.5rem 2rem;max-width:400px;width:90%;text-align:center;box-shadow:0 0 80px rgba(78,204,163,.2)}
+    .modal h2{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:.75rem}
+    .modal p{color:var(--mt);font-size:.875rem;line-height:1.6;margin-bottom:1.75rem}
+    .modal-cta{display:block;background:var(--ac);color:var(--ac-btn-tx);padding:.85rem;border-radius:7px;font-size:.95rem;font-weight:700;margin-bottom:.75rem}
+    .modal-close{background:none;border:none;color:var(--mt);font-size:.8rem;cursor:pointer;font-family:'Inter',sans-serif}
+    @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+    .ticker-wrap{border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);padding:.9rem 0;overflow:hidden}
+    .ticker-inner{display:flex;gap:1.5rem;animation:ticker 20s linear infinite;width:max-content}
+    .ticker-inner:hover{animation-play-state:paused}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    .fu1{animation:fadeUp .6s .1s ease forwards;opacity:0}
+    .fu2{animation:fadeUp .6s .25s ease forwards;opacity:0}
+    .fu3{animation:fadeUp .6s .4s ease forwards;opacity:0}
+    .fu4{animation:fadeUp .6s .55s ease forwards;opacity:0}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+    .cursor{animation:blink .8s infinite}
+    .loading-bar{height:2px;background:linear-gradient(90deg,var(--ac),#93c5fd,var(--ac));background-size:200% 100%;animation:shimmer 1.2s infinite;display:none}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    @media(max-width:768px){.nav-links{display:none}.hamburger{display:block}.desktop-only{display:none!important}.nav{grid-template-columns:1fr 1fr}}
+    @media(min-width:769px){.mobile-only{display:none!important}}
+  </style>
+</head>
+<body>
+  <!-- Floating orbs -->
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <!-- Centered Nav -->
+  <nav class="nav" id="navbar">
+    <a href="/" class="nav-logo">
+      <svg width="28" height="28" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="var(--bg)" stroke="#4ecca3" stroke-width="1.5"/><text x="16" y="23" text-anchor="middle" font-family="Impact" font-size="22" fill="#4ecca3" transform="scale(1.18,1) translate(-2.5,0)">R</text><line x1="7" y1="25" x2="25" y2="25" stroke="#4ecca3" stroke-width="1.5"/></svg>
+      <span class="nav-logo-text">RELLI<span>PSE</span></span>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="/#features">Features</a>
+      <a class="nav-link" href="/#how">How it works</a>
+      <a class="nav-link" href="/#about">About</a>
+      <a class="nav-link" href="/#pricing">Pricing</a>
+    </div>
+    <div class="nav-right">
+      <button class="toggle" id="theme-toggle" aria-label="Toggle theme"><div class="toggle-thumb"></div></button>
+      {% if user %}
+        <span class="nav-link desktop-only" style="font-size:.82rem">{{ user['name'] or user['email'].split('@')[0] }}</span>
+        <a href="/logout" class="btn-secondary" style="padding:.45rem 1rem;font-size:.8rem">Log out</a>
+      {% else %}
+        <a href="/login" class="nav-link desktop-only">Log in</a>
+        <a href="/signup" class="btn-primary" style="padding:.45rem 1.1rem;font-size:.8rem">Get started</a>
+      {% endif %}
+      <button class="hamburger mobile-only" id="hamburger">☰</button>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <a class="nav-link" href="/#features">Features</a>
+    <a class="nav-link" href="/#how">How it works</a>
+    <a class="nav-link" href="/#about">About</a>
+    <a class="nav-link" href="/#pricing">Pricing</a>
+    {% if user %}<a class="nav-link" href="/logout">Log out</a>{% else %}<a class="nav-link" href="/login">Log in</a><a class="nav-link" href="/signup">Get started →</a>{% endif %}
+  </div>
+
+  {% block content %}{% endblock %}
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const root = document.documentElement;
+    const saved = localStorage.getItem('theme') || 'dark';
+    root.setAttribute('data-theme', saved);
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    });
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40);
+    });
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+    let _tt;
+    function showToast(msg, type = '') {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = `toast ${type} show`;
+      clearTimeout(_tt); _tt = setTimeout(() => { t.className = 'toast'; }, 3500);
+    }
+    async function setPPP() {
+      try {
+        const r = await fetch('/api/pricing');
+        const d = await r.json();
+        document.querySelectorAll('.ppp-price').forEach(el => el.textContent = d.price);
+        document.querySelectorAll('.ppp-mo').forEach(el => el.textContent = d.price + '/mo');
+      } catch(e) {
+        document.querySelectorAll('.ppp-price').forEach(el => el.textContent = '$19');
+        document.querySelectorAll('.ppp-mo').forEach(el => el.textContent = '$19/mo');
+      }
+    }
+    setPPP();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js', {scope: '/'}).catch(() => {});
+    }
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

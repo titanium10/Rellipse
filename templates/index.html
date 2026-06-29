@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% block title %}Rellipse — Stop drowning in customer messages{% endblock %}
+
+{% block content %}
+<style>
+  /* ── Hero ── */
+  .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 2rem 60px;text-align:center;overflow:hidden}
+  .hero-art{position:absolute;inset:0;z-index:0;pointer-events:none}
+  /* animated grid lines */
+  .hero-art::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(78,204,163,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(78,204,163,.04) 1px,transparent 1px);background-size:60px 60px;animation:gridPan 20s linear infinite}
+  @keyframes gridPan{0%{background-position:0 0}100%{background-position:60px 60px}}
+  /* radial glow center */
+  .hero-art::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(78,204,163,.12) 0%,rgba(78,204,163,.04) 35%,transparent 70%);border-radius:50%;animation:glowPulse 4s ease-in-out infinite}
+  @keyframes glowPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.8}50%{transform:translate(-50%,-50%) scale(1.1);opacity:1}}
+  /* floating particles */
+  .particle{position:absolute;border-radius:50%;background:var(--ac);opacity:0;animation:particleFloat linear infinite}
+  @keyframes particleFloat{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:.6}90%{opacity:.2}100%{transform:translateY(-100px) scale(1.5);opacity:0}}
+  .hero-content{position:relative;z-index:2}
+  .badge{display:inline-block;background:rgba(78,204,163,.1);border:1px solid rgba(78,204,163,.3);color:var(--ac);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:1.75rem}
+  .hero-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(2.8rem,6vw,5rem);font-weight:700;line-height:1.05;letter-spacing:-.03em;margin-bottom:1.25rem}
+  .hero-title span{color:var(--ac)}
+  .hero-sub{font-size:1.05rem;color:var(--mt);line-height:1.7;max-width:500px;margin:0 auto 2.5rem}
+  .hero-ctas{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:3.5rem}
+
+  /* ── Glass demo widget ── */
+  .demo-wrap{position:relative;max-width:700px;width:100%;margin:0 auto}
+  .demo-widget{background:rgba(13,17,23,.55);backdrop-filter:blur(32px) saturate(200%);-webkit-backdrop-filter:blur(32px) saturate(200%);border:1px solid rgba(78,204,163,.15);border-radius:20px;padding:1.5rem;text-align:left;box-shadow:0 24px 80px rgba(0,0,0,.5),0 0 0 1px rgba(78,204,163,.08),inset 0 1px 0 rgba(255,255,255,.06)}
+  [data-theme="light"] .demo-widget{background:rgba(255,255,255,.6);border:1px solid rgba(26,158,120,.2);box-shadow:0 24px 80px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,.9)}
+  .demo-bar{display:flex;gap:6px;margin-bottom:1.25rem;align-items:center}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .demo-url{flex:1;background:rgba(255,255,255,.05);border-radius:5px;padding:4px 10px;font-size:.7rem;color:var(--mt);margin-left:8px}
+  [data-theme="light"] .demo-url{background:rgba(0,0,0,.05)}
+  .demo-label{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mt);margin-bottom:.6rem;display:flex;justify-content:space-between;align-items:center}
+  .demo-next{background:none;border:none;color:var(--ac);cursor:pointer;font-size:.72rem;font-family:Inter}
+  .demo-review{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:.875rem;color:var(--mt);line-height:1.65}
+  [data-theme="light"] .demo-review{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.08)}
+  .stars{color:#f59e0b;margin-bottom:4px;display:block;letter-spacing:2px}
+  .tone-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+  .tone-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--mt);border-radius:100px;padding:4px 12px;font-size:.75rem;cursor:pointer;transition:all .2s;font-family:Inter;backdrop-filter:blur(8px)}
+  .tone-btn.active{background:rgba(78,204,163,.15);border-color:rgba(78,204,163,.4);color:var(--ac)}
+  .tone-btn:hover:not(.active){border-color:rgba(255,255,255,.15);color:var(--tx)}
+  .demo-reply{background:rgba(78,204,163,.06);border:1px solid rgba(78,204,163,.2);border-radius:10px;padding:1rem;font-size:.875rem;color:var(--tx);line-height:1.75;min-height:60px;display:none;backdrop-filter:blur(8px)}
+  .demo-reply-label{font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);margin-bottom:6px}
+
+  /* ── Sections ── */
+  .section{max-width:1100px;margin:0 auto;padding:80px 2rem}
+  .section-label{font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);margin-bottom:.6rem;text-align:center}
+  .section-title{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:700;letter-spacing:-.02em;text-align:center;margin-bottom:3rem}
+  .stat-row{display:flex;gap:1.5rem}
+  .stat-card{flex:1;background:rgba(22,27,34,.5);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(78,204,163,.08);border-radius:12px;padding:2rem;text-align:center;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s,border-color .3s,box-shadow .3s}
+  .stat-card.visible{opacity:1;transform:translateY(0)}
+  .stat-card:hover{border-color:rgba(78,204,163,.2);box-shadow:0 8px 32px rgba(78,204,163,.08)}
+  [data-theme="light"] .stat-card{background:rgba(255,255,255,.6)}
+  .stat-val{font-family:'Space Grotesk',sans-serif;font-size:1.35rem;font-weight:700;color:var(--ac);margin-bottom:.3rem}
+  .stat-sub{font-size:.875rem;color:var(--mt)}
+  .bento{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+  .bento-wide{grid-column:span 2}
+  .steps-row{display:flex;align-items:flex-start;max-width:860px;margin:0 auto}
+  .step{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;padding:0 1rem}
+  .step-num{width:48px;height:48px;border-radius:50%;background:rgba(78,204,163,.1);border:2px solid var(--ac);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;color:var(--ac);margin-bottom:1rem;z-index:1}
+  .step-line{position:absolute;top:24px;left:calc(50% + 28px);right:calc(-50% + 28px);height:2px;background:rgba(78,204,163,.2)}
+  .step-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.95rem;margin-bottom:.4rem}
+  .step-desc{font-size:.82rem;color:var(--mt);line-height:1.65;max-width:200px}
+  .about-card{background:rgba(22,27,34,.5);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(78,204,163,.08);border-radius:16px;padding:2.5rem;display:flex;gap:2rem;align-items:flex-start}
+  [data-theme="light"] .about-card{background:rgba(255,255,255,.6)}
+  .about-avatar{width:72px;height:72px;border-radius:50%;background:rgba(78,204,163,.15);border:2px solid var(--ac);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:700;color:var(--ac);flex-shrink:0}
+  .about-eyebrow{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);margin-bottom:.5rem}
+  .about-name{font-family:'Space Grotesk',sans-serif;font-size:1.35rem;font-weight:700;margin-bottom:.75rem}
+  .about-text{font-size:.875rem;color:var(--mt);line-height:1.75;margin-bottom:1.25rem}
+  .pill-link{display:inline-flex;align-items:center;gap:6px;background:rgba(78,204,163,.1);border:1px solid rgba(78,204,163,.25);color:var(--ac);padding:6px 14px;border-radius:100px;font-size:.78rem;font-weight:600;transition:background .2s}
+  .pill-link:hover{background:rgba(78,204,163,.2)}
+  .price-wrap{max-width:460px;margin:0 auto;text-align:center}
+  .price-card{background:rgba(22,27,34,.6);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid rgba(78,204,163,.2);border-radius:20px;padding:2.5rem;box-shadow:0 0 60px rgba(78,204,163,.1),inset 0 1px 0 rgba(78,204,163,.08)}
+  [data-theme="light"] .price-card{background:rgba(255,255,255,.7)}
+  .price-num{font-family:'Space Grotesk',sans-serif;font-size:3rem;font-weight:700;margin-bottom:.2rem}
+  .price-per{color:var(--mt);font-size:.875rem;margin-bottom:2rem}
+  .price-list{list-style:none;text-align:left;margin-bottom:2rem}
+  .price-list li{display:flex;align-items:center;gap:10px;padding:.5rem 0;font-size:.875rem;color:var(--mt);border-bottom:1px solid rgba(255,255,255,.05)}
+  .price-list li:last-child{border-bottom:none}
+  .price-list li span{color:var(--ac);font-weight:700;flex-shrink:0}
+  .price-note{font-size:.75rem;color:var(--mt);margin-top:.75rem}
+  footer{border-top:1px solid var(--bdr);padding:2rem;margin-top:auto}
+  .footer-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+  .footer-copy{font-size:.75rem;color:var(--mt)}
+  .footer-copy a{color:var(--ac)}
+  .alt-bg{background:rgba(22,27,34,.3);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04)}
+  [data-theme="light"] .alt-bg{background:rgba(255,255,255,.4)}
+
+  /* scroll reveal */
+  .reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+  .reveal-delay-1{transition-delay:.1s}
+  .reveal-delay-2{transition-delay:.2s}
+  .reveal-delay-3{transition-delay:.3s}
+
+  @media(max-width:768px){
+    .bento{grid-template-columns:1fr!important}
+    .bento-wide{grid-column:span 1!important}
+    .stat-row{flex-direction:column!important}
+    .steps-row{flex-direction:column!important;align-items:center;gap:2rem}
+    .step-line{display:none}
+    .about-card{flex-direction:column!important}
+    .hero-ctas{flex-direction:column;align-items:center}
+  }
+</style>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-art" id="hero-art"></div>
+  <div class="hero-content">
+    <div class="badge fu1">⚡ AI-powered customer replies</div>
+    <h1 class="hero-title fu2">Stop drowning in<br/><span>customer messages</span></h1>
+    <p class="hero-sub fu3">Reply to reviews, emails, WhatsApp, Instagram in seconds — not hours. Paste any message, get a perfect reply instantly.</p>
+    <div class="hero-ctas fu4">
+      {% if user %}
+        <a href="/app" class="btn-primary" style="font-size:1rem;padding:.85rem 2.25rem">Go to dashboard →</a>
+      {% else %}
+        <a href="/signup" class="btn-primary" style="font-size:1rem;padding:.85rem 2.25rem">Start free — no card needed</a>
+        <a href="#how" class="btn-secondary" style="font-size:1rem;padding:.85rem 2.25rem">See how it works</a>
+      {% endif %}
+    </div>
+    <!-- GLASS DEMO WIDGET -->
+    <div class="demo-wrap fu4">
+      <div class="demo-widget">
+        <div class="demo-bar">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#febc2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+          <div class="demo-url">replyze.onrender.com/app</div>
+        </div>
+        <div class="demo-label">
+          <span>Customer review</span>
+          <button class="demo-next" id="next-review">try another →</button>
+        </div>
+        <div class="demo-review">
+          <span class="stars" id="demo-stars">★★★☆☆</span>
+          <span id="demo-review-text">The food arrived cold and the staff was rude when I complained. Waited 45 minutes for a simple order. Very disappointed.</span>
+        </div>
+        <div class="tone-row">
+          <button class="tone-btn" onclick="setTone(this)">Professional</button>
+          <button class="tone-btn" onclick="setTone(this)">Friendly</button>
+          <button class="tone-btn active" onclick="setTone(this)">Apologetic</button>
+        </div>
+        <button class="btn-primary" id="demo-btn" onclick="runDemo()" style="width:100%;padding:.8rem;margin-bottom:1rem;font-size:.9rem">⚡ Generate reply</button>
+        <div class="demo-reply" id="demo-reply">
+          <div class="demo-reply-label">Generated reply</div>
+          <span id="demo-typed"></span><span class="cursor" style="color:var(--ac)">|</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    {% for i in range(6) %}
+    <div class="platform-pill"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg><span>Google</span></div>
+    <div class="platform-pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><span>WhatsApp</span></div>
+    <div class="platform-pill"><svg width="18" height="18" viewBox="0 0 24 24"><defs><linearGradient id="ig{{i}}" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><path fill="url(#ig{{i}})" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg><span>Instagram</span></div>
+    <div class="platform-pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg><span>Facebook</span></div>
+    <div class="platform-pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.738l7.747-8.861L1.5 2.25h6.312l4.261 5.638 5.17-5.638zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>Twitter / X</span></div>
+    <div class="platform-pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><span>Email</span></div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- STATS -->
+<section class="section">
+  <div class="stat-row" id="stat-row">
+    <div class="stat-card"><div class="stat-val">Built by a student,</div><div class="stat-sub">for real businesses.</div></div>
+    <div class="stat-card" style="transition-delay:.15s"><div class="stat-val">Your data is</div><div class="stat-sub">never stored. Ever.</div></div>
+    <div class="stat-card" style="transition-delay:.3s"><div class="stat-val">No subscription</div><div class="stat-sub">needed to try.</div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<div class="alt-bg" id="features">
+  <div class="section">
+    <div class="section-label reveal">Features</div>
+    <h2 class="section-title reveal reveal-delay-1">Everything you need to reply better</h2>
+    <div class="bento">
+      <div class="glass-card reveal" style="padding:1.5rem"><div style="font-size:1.6rem;margin-bottom:.65rem">🧠</div><div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Sentiment detection</div><div style="font-size:.82rem;color:var(--mt);line-height:1.65">Automatically detects positive, negative, or neutral tone and adjusts reply style.</div></div>
+      <div class="glass-card reveal reveal-delay-1" style="padding:1.5rem"><div style="font-size:1.6rem;margin-bottom:.65rem">⚡</div><div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Instant replies</div><div style="font-size:.82rem;color:var(--mt);line-height:1.65">From paste to copy faster than typing "Dear customer..."</div></div>
+      <div class="glass-card reveal reveal-delay-2" style="padding:1.5rem"><div style="font-size:1.6rem;margin-bottom:.65rem">🎯</div><div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Tone control</div><div style="font-size:.82rem;color:var(--mt);line-height:1.65">Professional, friendly, or apologetic — you pick the mood.</div></div>
+      <div class="glass-card bento-wide reveal" style="padding:1.5rem"><div style="font-size:1.6rem;margin-bottom:.65rem">🌍</div><div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Any business, any person</div><div style="font-size:.82rem;color:var(--mt);line-height:1.65">Restaurant, freelancer, creator, clinic, gym — works for any business or individual that gets customer messages.</div></div>
+      <div class="glass-card reveal reveal-delay-1" style="padding:1.5rem"><div style="font-size:1.6rem;margin-bottom:.65rem">🔒</div><div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Zero data stored</div><div style="font-size:.82rem;color:var(--mt);line-height:1.65">Reviews and replies never logged, stored, or used for training.</div></div>
+      <div class="glass-card reveal reveal-delay-2" style="padding:1.5rem"><div style="font-size:1.6rem;margin-bottom:.65rem">✏️</div><div style="font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:600;margin-bottom:.35rem">Edit before sending</div><div style="font-size:.82rem;color:var(--mt);line-height:1.65">The AI drafts, you refine. Full control before you copy and send.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-label reveal">How it works</div>
+  <h2 class="section-title reveal reveal-delay-1">Three steps, under 20 seconds</h2>
+  <div class="steps-row">
+    <div class="step reveal"><div class="step-num">01</div><div class="step-line"></div><div class="step-title">Paste the message</div><div class="step-desc">Copy any review, WhatsApp message, or comment and paste it in.</div></div>
+    <div class="step reveal reveal-delay-1"><div class="step-num">02</div><div class="step-line"></div><div class="step-title">Pick your tone</div><div class="step-desc">Choose professional, friendly, or apologetic — whatever the situation calls for.</div></div>
+    <div class="step reveal reveal-delay-2"><div class="step-num">03</div><div class="step-title">Copy and send</div><div class="step-desc">Edit if needed, then copy. Done in seconds.</div></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<div class="alt-bg" id="about">
+  <div class="section" style="max-width:860px">
+    <div class="about-card reveal">
+      <div class="about-avatar">S</div>
+      <div style="flex:1">
+        <div class="about-eyebrow">About the builder</div>
+        <div class="about-name">Built by Samrat, age 14.</div>
+        <p class="about-text">I'm a 14-year-old developer who built Rellipse because I saw local businesses spending hours replying to customer reviews manually. I wanted to build something real — not a school project, but an actual product that saves people time and money. This is it.</p>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <a href="https://x.com/samratbuilds" target="_blank" class="pill-link">𝕏 @samratbuilds</a>
+          <a href="https://github.com/titanium10" target="_blank" class="pill-link">GitHub · titanium10</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-label reveal">Pricing</div>
+  <h2 class="section-title reveal reveal-delay-1">One simple price</h2>
+  <div class="price-wrap reveal reveal-delay-2">
+    <div class="price-card">
+      <div class="price-num ppp-price">$19</div>
+      <div class="price-per">per month · cancel anytime</div>
+      <ul class="price-list">
+        <li><span>✓</span> Unlimited replies on all platforms</li>
+        <li><span>✓</span> Google, WhatsApp, Instagram, Facebook, Twitter, Email</li>
+        <li><span>✓</span> Tone control + language selector</li>
+        <li><span>✓</span> Edit replies before copying</li>
+        <li><span>✓</span> Reply history saved</li>
+        <li><span>✓</span> Zero data stored</li>
+        <li><span>✓</span> Cancel anytime</li>
+      </ul>
+      <a href="/signup" class="btn-primary" style="display:block;text-align:center;padding:.9rem;font-size:1rem;width:100%">Start with 3 free replies →</a>
+      <div class="price-note">No credit card needed to start.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div style="display:flex;align-items:center;gap:9px">
+      <svg width="22" height="22" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="var(--bg)" stroke="#4ecca3" stroke-width="1.5"/><text x="16" y="23" text-anchor="middle" font-family="Impact" font-size="22" fill="#4ecca3" transform="scale(1.18,1) translate(-2.5,0)">R</text><line x1="7" y1="25" x2="25" y2="25" stroke="#4ecca3" stroke-width="1.5"/></svg>
+      <span style="font-family:Impact,sans-serif;font-size:1rem;letter-spacing:2px;color:var(--tx)">RELLI<span style="color:var(--ac)">PSE</span></span>
+    </div>
+    <div style="display:flex;gap:1.5rem;flex-wrap:wrap">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how" class="nav-link">How it works</a>
+      <a href="#about" class="nav-link">About</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="mailto:samratdgod@gmail.com" class="nav-link">Contact</a>
+    </div>
+    <div class="footer-copy">Rellipse © 2025 · Built by <a href="https://x.com/samratbuilds">Samrat</a></div>
+  </div>
+</footer>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // ── Floating particles ──
+  function spawnParticles() {
+    const art = document.getElementById('hero-art');
+    for (let i = 0; i < 12; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 4 + 2;
+      p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*8+6}s;animation-delay:${Math.random()*8}s;opacity:0`;
+      art.appendChild(p);
+    }
+  }
+  spawnParticles();
+
+  // ── Demo widget ──
+  const REVIEWS = [
+    {stars:3,text:"The food arrived cold and the staff was rude when I complained. Waited 45 minutes for a simple order. Very disappointed."},
+    {stars:2,text:"Checked in and my room wasn't cleaned. Front desk barely apologized. Won't be coming back."},
+    {stars:1,text:"Ordered online but received the wrong items. Support took forever to respond and offered no refund."},
+  ];
+  const REPLIES = [
+    "Thank you for taking the time to share your feedback — we're truly sorry for this experience. Cold food and a long wait is never acceptable, and the way our staff handled your complaint fell far short of our standards. We'd love the chance to make this right. Please reach out to us directly.",
+    "We sincerely apologize for the state of your room upon check-in — that's not the standard we hold ourselves to. We're addressing this with our housekeeping team immediately. We'd love to have you back and make it up to you.",
+    "We're so sorry about the mix-up with your order and the delay in our response. We'd like to issue a full refund and ensure your next order is on us. Please reach out and we'll resolve this right away.",
+  ];
+  let idx = 0, typing = false, iv = null;
+  function stars(n) { return '★'.repeat(n) + '☆'.repeat(5-n); }
+  document.getElementById('next-review').addEventListener('click', () => {
+    idx = (idx+1) % REVIEWS.length;
+    document.getElementById('demo-stars').textContent = stars(REVIEWS[idx].stars);
+    document.getElementById('demo-review-text').textContent = REVIEWS[idx].text;
+    document.getElementById('demo-reply').style.display = 'none';
+    document.getElementById('demo-typed').textContent = '';
+    if (iv) clearInterval(iv); typing = false;
+    const btn = document.getElementById('demo-btn');
+    btn.textContent = '⚡ Generate reply'; btn.disabled = false;
+  });
+  function setTone(el) {
+    document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function runDemo() {
+    if (typing) return; typing = true;
+    const btn = document.getElementById('demo-btn');
+    btn.textContent = 'Generating...'; btn.disabled = true;
+    const replyEl = document.getElementById('demo-reply');
+    const typedEl = document.getElementById('demo-typed');
+    replyEl.style.display = 'block'; typedEl.textContent = '';
+    const reply = REPLIES[idx]; let i = 0;
+    iv = setInterval(() => {
+      typedEl.textContent = reply.slice(0, i+1); i++;
+      if (i >= reply.length) { clearInterval(iv); typing = false; btn.textContent = '⚡ Generate reply'; btn.disabled = false; }
+    }, 16);
+  }
+
+  // ── Scroll reveal ──
+  const revealObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // ── Stat cards ──
+  const statObs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) document.querySelectorAll('.stat-card').forEach(c => c.classList.add('visible'));
+  }, { threshold: 0.2 });
+  const statRow = document.getElementById('stat-row');
+  if (statRow) statObs.observe(statRow);
+</script>
+{% endblock %}

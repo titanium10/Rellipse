@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Rellipse{% endblock %}
+
+{% block content %}
+<style>
+  main{flex:1;max-width:900px;width:100%;margin:0 auto;padding:80px 1.5rem 3rem;display:flex;flex-direction:column;gap:1.25rem}
+  .page-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+  .page-title{font-family:'Space Grotesk',sans-serif;font-size:1.35rem;font-weight:700}
+  .page-sub{font-size:.82rem;color:var(--mt);margin-top:.2rem}
+  .uses-bar{background:var(--surf);border:1px solid var(--bdr);border-radius:10px;padding:.85rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;font-size:.85rem}
+  .uses-label{color:var(--mt)}
+  .uses-label strong{color:var(--tx)}
+  .upgrade-link{color:var(--ac);font-weight:600;font-size:.8rem;border:1px solid rgba(78,204,163,.4);padding:.35rem .85rem;border-radius:100px;transition:background .2s}
+  .upgrade-link:hover{background:rgba(78,204,163,.1)}
+  .panel{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
+  .panel-header{padding:.85rem 1.25rem;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center}
+  .panel-label{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mt)}
+  .char-count{font-size:.72rem;color:var(--mt)}
+  .controls-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;padding:1.25rem;border-bottom:1px solid var(--bdr)}
+  .ctrl-group label{display:block;font-size:.68rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--mt);margin-bottom:.5rem}
+  select{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:7px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.875rem;padding:.6rem .85rem;outline:none;transition:border-color .15s,box-shadow .15s;appearance:none;cursor:pointer}
+  select:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(78,204,163,.1)}
+  .tone-section{padding:1.25rem;border-bottom:1px solid var(--bdr)}
+  .tone-row{display:flex;align-items:center;gap:1rem}
+  .tone-label-left{font-size:.72rem;color:var(--mt);white-space:nowrap}
+  .tone-slider{flex:1;-webkit-appearance:none;appearance:none;height:4px;background:linear-gradient(to right,var(--ac) 0%,var(--ac) 50%,var(--bdr) 50%,var(--bdr) 100%);border-radius:100px;outline:none;cursor:pointer}
+  .tone-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--ac);cursor:pointer;box-shadow:0 0 8px rgba(78,204,163,.5)}
+  .tone-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ac);cursor:pointer;border:none}
+  .tone-val{font-size:.72rem;color:var(--ac);font-weight:600;min-width:60px;text-align:right}
+  .length-row{display:flex;gap:.6rem;margin-top:1rem}
+  .len-btn{flex:1;background:transparent;border:1px solid var(--bdr);border-radius:7px;color:var(--mt);padding:.5rem;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;text-align:center}
+  .len-btn.active{background:rgba(78,204,163,.12);border-color:var(--ac);color:var(--ac)}
+  .len-btn:hover:not(.active){border-color:var(--mt);color:var(--tx)}
+  .context-toggle{background:none;border:none;color:var(--mt);font-size:.75rem;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:5px;transition:color .2s;padding:0}
+  .context-toggle:hover{color:var(--ac)}
+  .context-section{padding:0 1.25rem;max-height:0;overflow:hidden;transition:max-height .3s,padding .3s}
+  .context-section.open{max-height:120px;padding:.75rem 1.25rem}
+  .context-input{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:7px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.85rem;padding:.65rem .9rem;outline:none;resize:none;height:72px;transition:border-color .15s}
+  .context-input:focus{border-color:var(--ac)}
+  .biz-input{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:7px;color:var(--tx);font-family:'Inter',sans-serif;font-size:.875rem;padding:.6rem .85rem;outline:none;transition:border-color .15s}
+  .biz-input:focus{border-color:var(--ac)}
+  textarea.msg{background:transparent;border:none;outline:none;resize:none;color:var(--tx);font-family:'Inter',sans-serif;font-size:.9rem;line-height:1.75;padding:1.25rem;min-height:150px;width:100%}
+  textarea.msg::placeholder{color:var(--mt)}
+  .email-badge{display:none;background:rgba(78,204,163,.1);border:1px solid rgba(78,204,163,.3);color:var(--ac);font-size:.7rem;font-weight:600;letter-spacing:.08em;padding:3px 10px;border-radius:100px}
+  .action-row{display:flex;gap:.85rem;align-items:center;flex-wrap:wrap}
+  #gen-btn{background:var(--ac);color:var(--ac-btn-tx);border:none;padding:.85rem 2rem;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:opacity .15s,transform .15s,box-shadow .2s;box-shadow:0 0 24px rgba(78,204,163,.2)}
+  #gen-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 32px rgba(78,204,163,.4)}
+  #gen-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .action-btn{background:transparent;color:var(--tx);border:1px solid var(--bdr);padding:.85rem 1.35rem;border-radius:8px;font-size:.875rem;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:border-color .2s,color .2s;display:none}
+  .action-btn:hover{border-color:var(--ac);color:var(--ac)}
+  .output-panel{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
+  .loading-bar{height:3px;background:linear-gradient(90deg,var(--ac),#93c5fd,var(--ac));background-size:200% 100%;animation:shimmer 1.2s infinite;display:none}
+  .output-body{padding:1.25rem;min-height:120px;position:relative}
+  .output-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mt);gap:.4rem;text-align:center;font-size:.85rem;padding:2rem 0}
+  .output-placeholder .icon{font-size:2rem}
+  #output-textarea{width:100%;background:transparent;border:none;outline:none;resize:vertical;color:var(--tx);font-family:'Inter',sans-serif;font-size:.9rem;line-height:1.75;min-height:140px;display:none}
+  .history-section{background:var(--surf);border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
+  .history-header{padding:.85rem 1.25rem;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+  .history-header:hover .panel-label{color:var(--tx)}
+  .history-toggle{font-size:.8rem;color:var(--mt);transition:transform .3s}
+  .history-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+  .history-body.open{max-height:600px}
+  .history-item{padding:.85rem 1.25rem;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .2s}
+  .history-item:last-child{border-bottom:none}
+  .history-item:hover{background:rgba(78,204,163,.04)}
+  .history-meta{display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem}
+  .history-platform{font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ac);background:rgba(78,204,163,.1);padding:2px 8px;border-radius:100px}
+  .history-time{font-size:.7rem;color:var(--mt)}
+  .history-preview{font-size:.8rem;color:var(--mt);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .history-empty{padding:2rem;text-align:center;font-size:.85rem;color:var(--mt)}
+  @media(max-width:640px){.controls-grid{grid-template-columns:1fr!important}.action-row{flex-direction:column;align-items:stretch}.action-row>*{width:100%;text-align:center}}
+</style>
+
+<main>
+  <div class="page-header">
+    <div>
+      <div class="page-title">Generate a reply</div>
+      <div class="page-sub">Welcome back, {{ user['name'] or user['email'].split('@')[0] }} 👋</div>
+    </div>
+    <a href="/logout" style="font-size:.8rem;color:var(--mt);border:1px solid var(--bdr);padding:.4rem .9rem;border-radius:7px;transition:border-color .2s" onmouseover="this.style.borderColor='var(--ac)'" onmouseout="this.style.borderColor='var(--bdr)'">Log out</a>
+  </div>
+
+  <div class="uses-bar">
+    <span class="uses-label">Free replies used: <strong id="uses-count">{{ user['uses'] }} / 3</strong></span>
+    {% if user['uses'] >= 3 and user['email'] not in ['samratdgod@gmail.com'] %}
+      <a class="upgrade-link" href="https://buy.stripe.com/YOUR_STRIPE_LINK" target="_blank">Unlock unlimited — <span class="ppp-mo">$19/mo</span> →</a>
+    {% else %}
+      <span style="font-size:.78rem;color:var(--mt)">{{ [3 - user['uses'], 0]|max }} free {{ 'reply' if (3 - user['uses']) == 1 else 'replies' }} remaining</span>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-label">Message settings</span>
+      <span class="email-badge" id="email-badge">📧 Email mode</span>
+    </div>
+
+    <div class="controls-grid">
+      <div class="ctrl-group">
+        <label>Platform</label>
+        <div style="position:relative">
+          <select id="platform" style="padding-left:2.2rem">
+            <option value="google">Google Review</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+            <option value="twitter">Twitter / X</option>
+            <option value="email">Email</option>
+          </select>
+          <div id="platform-icon" style="position:absolute;left:.65rem;top:50%;transform:translateY(-50%);pointer-events:none;display:flex;align-items:center"></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Language</label>
+        <select id="language">
+          <option value="English">🇬🇧 English</option>
+          <option value="Hindi">🇮🇳 Hindi</option>
+          <option value="Spanish">🇪🇸 Spanish</option>
+          <option value="French">🇫🇷 French</option>
+          <option value="German">🇩🇪 German</option>
+          <option value="Portuguese">🇧🇷 Portuguese</option>
+          <option value="Japanese">🇯🇵 Japanese</option>
+          <option value="Korean">🇰🇷 Korean</option>
+          <option value="Chinese">🇨🇳 Chinese</option>
+          <option value="Arabic">🇸🇦 Arabic</option>
+          <option value="Italian">🇮🇹 Italian</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>Business name (optional)</label>
+        <input class="biz-input" id="biz-name" type="text" placeholder="e.g. Mike's Coffee Shop"/>
+      </div>
+    </div>
+
+    <div class="tone-section">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+        <span class="panel-label">Tone & Length</span>
+        <button class="context-toggle" id="ctx-toggle">＋ Add context</button>
+      </div>
+      <div class="tone-row">
+        <span class="tone-label-left">Formal</span>
+        <input class="tone-slider" type="range" id="tone" min="0" max="100" value="50"/>
+        <span class="tone-val" id="tone-val">Balanced</span>
+      </div>
+      <div class="length-row">
+        <button class="len-btn" data-len="short">Short</button>
+        <button class="len-btn active" data-len="medium">Medium</button>
+        <button class="len-btn" data-len="long">Long</button>
+      </div>
+    </div>
+
+    <div class="context-section" id="ctx-section">
+      <textarea class="context-input" id="context" placeholder="Add any extra details — e.g. 'We offer a 30-day return policy' or 'The customer is a VIP'"></textarea>
+    </div>
+
+    <div class="panel-header" style="border-top:1px solid var(--bdr)">
+      <span class="panel-label">Customer message</span>
+      <span class="char-count" id="char-count">0 / 2000</span>
+    </div>
+    <textarea class="msg" id="message" placeholder="Paste the review, WhatsApp message, email, or comment here…" maxlength="2000"></textarea>
+  </div>
+
+  <div class="action-row">
+    <button id="gen-btn">⚡ Generate reply</button>
+    <button class="action-btn" id="copy-btn">Copy reply</button>
+    <button class="action-btn" id="regen-btn">↺ Regenerate</button>
+  </div>
+
+  <div class="output-panel">
+    <div class="loading-bar" id="loading-bar"></div>
+    <div class="panel-header">
+      <span class="panel-label">Your reply</span>
+      <span id="out-chars" style="font-size:.72rem;color:var(--mt)"></span>
+    </div>
+    <div class="output-body">
+      <div class="output-placeholder" id="output-ph">
+        <div class="icon">⚡</div>
+        <p>Your AI reply will appear here.</p>
+        <p style="font-size:.75rem;margin-top:.25rem">You can edit it before copying.</p>
+      </div>
+      <textarea id="output-textarea"></textarea>
+    </div>
+  </div>
+
+  <div class="history-section">
+    <div class="history-header" id="hist-toggle">
+      <span class="panel-label">Reply history</span>
+      <span class="history-toggle" id="hist-arrow">▼</span>
+    </div>
+    <div class="history-body" id="hist-body">
+      <div class="history-empty" id="hist-empty">Loading history…</div>
+    </div>
+  </div>
+</main>
+
+<div class="modal-overlay" id="paywall">
+  <div class="modal">
+    <h2>3 free replies used ⚡</h2>
+    <p>Unlock unlimited replies for <strong><span class="ppp-price">$19</span>/month</strong>. Cancel anytime.</p>
+    <a class="modal-cta" href="https://buy.stripe.com/YOUR_STRIPE_LINK" target="_blank">Unlock unlimited — <span class="ppp-mo">$19/mo</span></a>
+    <button class="modal-close" id="close-paywall">I'll reply manually</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // ── Tone slider ──
+  const toneSlider = document.getElementById('tone');
+  const toneVal    = document.getElementById('tone-val');
+  const TONE_LABELS = ['Very formal','Formal','Balanced','Friendly','Casual'];
+  function updateTone() {
+    const v = parseInt(toneSlider.value);
+    const idx = Math.min(Math.floor(v / 20), 4);
+    toneVal.textContent = TONE_LABELS[idx];
+    const pct = v + '%';
+    toneSlider.style.background = `linear-gradient(to right,var(--ac) 0%,var(--ac) ${pct},var(--bdr) ${pct},var(--bdr) 100%)`;
+  }
+  toneSlider.addEventListener('input', updateTone);
+  updateTone();
+
+  // ── Length buttons ──
+  let activeLen = 'medium';
+  document.querySelectorAll('.len-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.len-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeLen = btn.dataset.len;
+    });
+  });
+
+  // ── Context toggle ──
+  document.getElementById('ctx-toggle').addEventListener('click', () => {
+    const s = document.getElementById('ctx-section');
+    const open = s.classList.toggle('open');
+    document.getElementById('ctx-toggle').textContent = open ? '− Hide context' : '＋ Add context';
+  });
+
+  // ── Char count + email detection ──
+  const msgEl = document.getElementById('message');
+  msgEl.addEventListener('input', () => {
+    document.getElementById('char-count').textContent = `${msgEl.value.length} / 2000`;
+    const isEmail = /^(from|to|subject|date|cc|bcc)\s*:/im.test(msgEl.value);
+    document.getElementById('email-badge').style.display = isEmail ? 'inline-block' : 'none';
+  });
+
+  // ── Generate ──
+  const genBtn    = document.getElementById('gen-btn');
+  const copyBtn   = document.getElementById('copy-btn');
+  const regenBtn  = document.getElementById('regen-btn');
+  const outputTA  = document.getElementById('output-textarea');
+  const outputPh  = document.getElementById('output-ph');
+  const loadBar   = document.getElementById('loading-bar');
+  const outChars  = document.getElementById('out-chars');
+  const paywall   = document.getElementById('paywall');
+  const usesCount = document.getElementById('uses-count');
+
+  async function generate() {
+    const message = msgEl.value.trim();
+    if (!message) { showToast('Paste a message first.','error'); return; }
+
+    genBtn.disabled = true; genBtn.textContent = 'Generating…';
+    loadBar.style.display = 'block';
+    outputPh.style.display = 'flex'; outputTA.style.display = 'none';
+    copyBtn.style.display = 'none'; regenBtn.style.display = 'none';
+    outChars.textContent = '';
+
+    try {
+      const res = await fetch('/api/reply', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          message,
+          platform:      document.getElementById('platform').value,
+          language:      document.getElementById('language').value,
+          context:       document.getElementById('context').value.trim(),
+          tone_value:    parseInt(toneSlider.value),
+          length:        activeLen,
+          business_name: document.getElementById('biz-name').value.trim(),
+        })
+      });
+
+      const data = await res.json();
+      if (res.status === 402) { paywall.classList.add('show'); return; }
+      if (!res.ok || data.error) { showToast(data.error || 'Something went wrong.','error'); return; }
+
+      outputPh.style.display = 'none';
+      outputTA.style.display = 'block';
+      outputTA.value = data.reply;
+      outChars.textContent = `${data.reply.length} chars`;
+      copyBtn.style.display = 'inline-block';
+      regenBtn.style.display = 'inline-block';
+      showToast('Reply ready!','success');
+
+      // update uses counter
+      const parts = usesCount.textContent.split('/');
+      const cur = parseInt(parts[0].trim());
+      usesCount.textContent = `${cur + 1} / 3`;
+
+      // refresh history
+      loadHistory();
+    } catch(e) {
+      showToast('Network error. Try again.','error');
+    } finally {
+      genBtn.disabled = false; genBtn.textContent = '⚡ Generate reply';
+      loadBar.style.display = 'none';
+    }
+  }
+
+  genBtn.addEventListener('click', generate);
+  regenBtn.addEventListener('click', generate);
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(outputTA.value)
+      .then(() => showToast('Copied!','success'))
+      .catch(() => showToast('Select text and copy manually.','error'));
+  });
+
+  // ── Paywall ──
+  document.getElementById('close-paywall').addEventListener('click', () => paywall.classList.remove('show'));
+  paywall.addEventListener('click', e => { if (e.target === paywall) paywall.classList.remove('show'); });
+
+  // ── History ──
+  let histOpen = false;
+  document.getElementById('hist-toggle').addEventListener('click', () => {
+    histOpen = !histOpen;
+    document.getElementById('hist-body').classList.toggle('open', histOpen);
+    document.getElementById('hist-arrow').style.transform = histOpen ? 'rotate(180deg)' : '';
+    if (histOpen) loadHistory();
+  });
+
+  async function loadHistory() {
+    try {
+      const res = await fetch('/api/history');
+      const data = await res.json();
+      const body = document.getElementById('hist-body');
+      const empty = document.getElementById('hist-empty');
+      if (!data.history || data.history.length === 0) {
+        empty.textContent = 'No reply history yet.';
+        return;
+      }
+      empty.style.display = 'none';
+      // remove old items
+      body.querySelectorAll('.history-item').forEach(el => el.remove());
+      data.history.forEach(h => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `
+          <div class="history-meta">
+            <span class="history-platform">${h.platform}</span>
+            <span class="history-time">${h.created_at}</span>
+            <span class="history-time" style="margin-left:auto">${h.language}</span>
+          </div>
+          <div class="history-preview">${h.message_preview || '(no preview)'}…</div>`;
+        div.addEventListener('click', () => {
+          outputPh.style.display = 'none';
+          outputTA.style.display = 'block';
+          outputTA.value = h.full_reply;
+          outChars.textContent = `${h.full_reply.length} chars`;
+          copyBtn.style.display = 'inline-block';
+          regenBtn.style.display = 'inline-block';
+          window.scrollTo({top: 0, behavior: 'smooth'});
+          showToast('Loaded from history','success');
+        });
+        body.appendChild(div);
+      });
+    } catch(e) {}
+  }
+
+  // ── Platform icons ──
+  const PLATFORM_ICONS = {
+    google: `<svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>`,
+    whatsapp: `<svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`,
+    instagram: `<svg width="16" height="16" viewBox="0 0 24 24"><defs><linearGradient id="ig-ed" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><path fill="url(#ig-ed)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>`,
+    facebook: `<svg width="16" height="16" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
+    twitter: `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.738l7.747-8.861L1.5 2.25h6.312l4.261 5.638 5.17-5.638zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+    email: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
+  };
+
+  function updatePlatformIcon() {
+    const val = document.getElementById('platform').value;
+    document.getElementById('platform-icon').innerHTML = PLATFORM_ICONS[val] || '';
+  }
+  document.getElementById('platform').addEventListener('change', updatePlatformIcon);
+  updatePlatformIcon();
+</script>
+{% endblock %}
